@@ -1,0 +1,14 @@
+# Vim files.
+.vimrc
+*.swp
+
+# Binary, object files.
+a.out
+*.o
+
+# Dependency files.
+*.d
+
+# Compiled libraries.
+*.a
+*.so
