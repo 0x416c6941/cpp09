@@ -8,7 +8,7 @@ class Bureaucrat {
     private:
         const std::string m_name;
 
-        static const int m_GRADE_HIGHEST = 1, m_GRADE_LOWEST = 150;
+        static const int m_grade_highest = 1, m_grade_lowest = 150;
         int m_grade;
 
         // We don't want a default constuctor to be accessible.

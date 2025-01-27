@@ -2,20 +2,20 @@
 #include <string>
 
 Bureaucrat::Bureaucrat(const std::string & name, int grade) : m_name(name) {
-    if (grade < m_GRADE_HIGHEST) {
+    if (grade < m_grade_highest) {
         throw GradeTooHighException("Bureaucrat::Bureaucrat(): Grade is too high");
     }
-    else if (grade > m_GRADE_LOWEST) {
+    else if (grade > m_grade_lowest) {
         throw GradeTooLowException("Bureaucrat::Bureaucrat(): Grade is too low");
     }
     m_grade = grade;
 }
 
 Bureaucrat::Bureaucrat(const Bureaucrat & src) : m_name(src.m_name) {
-    if (src.m_grade < m_GRADE_HIGHEST) {
+    if (src.m_grade < m_grade_highest) {
         throw GradeTooHighException("Bureaucrat::Bureaucrat(): Grade is too high");
     }
-    else if (src.m_grade > m_GRADE_LOWEST) {
+    else if (src.m_grade > m_grade_lowest) {
         throw GradeTooLowException("Bureaucrat::Bureaucrat(): Grade is too low");
     }
     m_grade = src.m_grade;
@@ -25,10 +25,10 @@ Bureaucrat & Bureaucrat::operator = (const Bureaucrat & src) {
     if (this == &src) {
         return *this;
     }
-    if (src.m_grade < m_GRADE_HIGHEST) {
+    if (src.m_grade < m_grade_highest) {
         throw GradeTooHighException("Bureaucrat::operator = (): Grade is too high");
     }
-    else if (src.m_grade > m_GRADE_LOWEST) {
+    else if (src.m_grade > m_grade_lowest) {
         throw GradeTooLowException("Bureaucrat::operator = (): Grade is too low");
     }
     m_grade = src.m_grade;
@@ -63,14 +63,14 @@ int Bureaucrat::getGrade() const {
 }
 
 void Bureaucrat::increment_grade() {
-    if (m_grade - 1 < m_GRADE_HIGHEST) {
+    if (m_grade - 1 < m_grade_highest) {
         throw GradeTooHighException("Bureaucrat::increment_grade(): Grade is already the highest possible");
     }
     m_grade--;
 }
 
 void Bureaucrat::decrement_grade() {
-    if (m_grade + 1 > m_GRADE_LOWEST) {
+    if (m_grade + 1 > m_grade_lowest) {
         throw GradeTooHighException("Bureaucrat::decrement_grade(): Grade is already the highest possible");
     }
     m_grade++;
