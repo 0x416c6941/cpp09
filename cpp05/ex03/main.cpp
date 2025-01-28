@@ -1,11 +1,11 @@
-#include <Bureaucrat.hpp>
+#include <Intern.hpp>
 #include <AForm.hpp>
-#include <ShrubberyCreationForm.hpp>
-#include <RobotomyRequestForm.hpp>
-#include <PresidentialPardonForm.hpp>
-#include <stdexcept>
-#include <iostream>
 
 int main() {
+    Intern some_guy;
+    AForm * form;
+
+    form = some_guy.makeForm("robotomy request", "Bender");
+    delete form;
     return 0;
 }

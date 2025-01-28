@@ -5,8 +5,8 @@
 #include <fstream>
 #include <stdexcept>
 
-ShrubberyCreationForm::ShrubberyCreationForm(const std::string & name, const std::string & target)
-    : AForm(name, m_required_sign_grade, m_required_exec_grade),
+ShrubberyCreationForm::ShrubberyCreationForm(const std::string & target)
+    : AForm("Some ShrubberyCreationForm", m_required_sign_grade, m_required_exec_grade),
       m_target(target) {
 }
 

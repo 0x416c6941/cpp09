@@ -6,8 +6,8 @@
 #include <ctime>
 #include <iostream>
 
-RobotomyRequestForm::RobotomyRequestForm(const std::string & name, const std::string & target)
-    : AForm(name, m_required_sign_grade, m_required_exec_grade),
+RobotomyRequestForm::RobotomyRequestForm(const std::string & target)
+    : AForm("Some RobotomyRequestForm", m_required_sign_grade, m_required_exec_grade),
       m_target(target) {
 }
 
