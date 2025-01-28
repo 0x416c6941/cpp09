@@ -30,7 +30,7 @@ void ShrubberyCreationForm::execute(const Bureaucrat & executor) const {
 
     if (!check_execute(executor)) {
         if (!is_signed()) {
-            throw FormNotSignedException("ShrubberyCreationForm::execute(): Form is executed already");
+            throw FormNotSignedException("ShrubberyCreationForm::execute(): Form is not signed yet");
         }
         throw FormNotSignedException("ShrubberyCreationForm::execute(): Executors grade is too low");
     }
