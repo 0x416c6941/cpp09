@@ -22,6 +22,7 @@ ShrubberyCreationForm & ShrubberyCreationForm::operator = (const ShrubberyCreati
     m_target = src.m_target;
     return *this;
 }
+
 ShrubberyCreationForm::~ShrubberyCreationForm() {
 }
 
