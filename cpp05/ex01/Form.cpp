@@ -14,7 +14,8 @@ Form::Form(const std::string & name, int sign_grade, int exec_grade)
 }
 
 Form::Form(const Form & src)
-    : m_name(src.m_name), m_sign_grade(src.m_sign_grade), m_exec_grade(src.m_exec_grade) {
+    : m_name(src.m_name), m_signed(src.m_signed),
+      m_sign_grade(src.m_sign_grade), m_exec_grade(src.m_exec_grade) {
     if (src.m_sign_grade < m_grade_highest || src.m_exec_grade < m_grade_highest) {
         throw GradeTooHighException("Form::Form(): Some grade is too high");
     }
@@ -33,6 +34,7 @@ Form & Form::operator = (const Form & src) {
     else if (src.m_sign_grade > m_grade_lowest || src.m_exec_grade > m_grade_lowest) {
         throw GradeTooLowException("Form::operator = (): Some grade is too low");
     }
+    m_signed = src.m_signed;
     return *this;
 }
 
