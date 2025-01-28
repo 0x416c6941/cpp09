@@ -19,6 +19,7 @@ class AForm {
         // As previously, we don't want default constructor be accessible.
         AForm();
 
+    protected:
         class GradeTooHighException : public std::exception {
             private:
                 const char * m_msg;
