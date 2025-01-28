@@ -103,7 +103,7 @@ void Bureaucrat::signForm(Form & to_sign) const {
         }
         return;
     }
-    toSign.beSigned(*this);
+    to_sign.beSigned(*this);
     if (m_name.empty()) {
         std::cout << "Unnamed bureaucrat";
     }
