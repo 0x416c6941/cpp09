@@ -4,7 +4,7 @@
 #include <Bureaucrat.hpp>
 
 Form::Form(const std::string & name, int sign_grade, int exec_grade)
-    : m_name(name), m_sign_grade(sign_grade), m_exec_grade(exec_grade) {
+    : m_name(name), m_signed(false), m_sign_grade(sign_grade), m_exec_grade(exec_grade) {
     if (sign_grade < m_grade_highest || exec_grade < m_grade_highest) {
         throw GradeTooHighException("Form::Form(): Some grade is too high");
     }
