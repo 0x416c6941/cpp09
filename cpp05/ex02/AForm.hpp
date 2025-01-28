@@ -11,8 +11,6 @@ class AForm {
     private:
         const std::string m_name;
 
-        // We can execute form multiple times,
-        // since it wasn't stated otherwise in a subject.pdf.
         bool m_signed;
 
         static const int m_grade_highest = 1, m_grade_lowest = 150;
@@ -66,13 +64,18 @@ class AForm {
         void beSigned(const Bureaucrat & by);
 
         /**
-         * Check, if form is signed already and if 
-         * \p executor can execute form or not (based on their current grade).
-         * @param   executor    Executor to check.
-         * @return  true, if form is signed and \p executor's grade is sufficient;
-         *          false otherwise.
+         * Check, if form is signed already and if \p executor has sufficient grade.
+         * @param   executor                Executor to check.
+         * @throws  FormNotSignedException  Form wasn't signed yet.
+         * @throws  GradeTooLowException    If \p executor's grade is unsufficient.
          */
-        bool check_execute(const Bureaucrat & executor) const;
+        void check_execute(const Bureaucrat & executor) const;
+        /**
+         * Try to execute the form. If some execution condition isn't met,
+         * throws same exceptions as check_execute().
+         * @param   executor    Bureaucrat, that will execute the form.
+         * @throws  Please consult with \ref check_execute().
+         */
         virtual void execute(const Bureaucrat & executor) const = 0;
 };
 

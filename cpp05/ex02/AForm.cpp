@@ -88,11 +88,13 @@ void AForm::beSigned(const Bureaucrat & by) {
     m_signed = true;
 }
 
-bool AForm::check_execute(const Bureaucrat & executor) const {
-    if (!m_signed || m_exec_grade < executor.getGrade()) {
-        return false;
+void AForm::check_execute(const Bureaucrat & executor) const {
+    if (!m_signed) {
+        throw FormNotSignedException("AForm::check_execute(): Form wasn't signed yet");
     }
-    return true;
+    else if (m_exec_grade < executor.getGrade()) {
+        throw GradeTooLowException("AForm::check_execute(): executor's grade is too low");
+    }
 }
 
 std::ostream & operator << (std::ostream & os, const AForm & obj) {

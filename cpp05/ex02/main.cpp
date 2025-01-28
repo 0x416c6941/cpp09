@@ -2,6 +2,7 @@
 #include <AForm.hpp>
 #include <ShrubberyCreationForm.hpp>
 #include <RobotomyRequestForm.hpp>
+#include <PresidentialPardonForm.hpp>
 #include <stdexcept>
 #include <iostream>
 
@@ -19,6 +20,10 @@ int main() {
     quite_good_bureaucrat.executeForm(*some_form);
     delete some_form;
     some_form = new RobotomyRequestForm("Some object I don't know");
+    best_bureaucrat.signForm(*some_form);
+    best_bureaucrat.executeForm(*some_form);
+    delete some_form;
+    some_form = new PresidentialPardonForm("ddddd");
     best_bureaucrat.signForm(*some_form);
     best_bureaucrat.executeForm(*some_form);
     delete some_form;
