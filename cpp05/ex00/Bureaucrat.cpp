@@ -1,5 +1,6 @@
 #include <Bureaucrat.hpp>
 #include <string>
+#include <ostream>
 
 Bureaucrat::Bureaucrat(const std::string & name, int grade) : m_name(name) {
     if (grade < m_grade_highest) {
