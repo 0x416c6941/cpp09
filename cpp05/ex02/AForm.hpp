@@ -11,6 +11,8 @@ class AForm {
     private:
         const std::string m_name;
 
+        // We can execute form multiple times,
+        // since it wasn't stated otherwise in a subject.pdf.
         bool m_signed;
 
         static const int m_grade_highest = 1, m_grade_lowest = 150;

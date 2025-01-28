@@ -29,12 +29,12 @@ void ShrubberyCreationForm::execute(const Bureaucrat & executor) const {
     std::ofstream output;
 
     if (!check_execute(executor)) {
-        if (is_signed()) {
+        if (!is_signed()) {
             throw FormNotSignedException("ShrubberyCreationForm::execute(): Form is executed already");
         }
         throw FormNotSignedException("ShrubberyCreationForm::execute(): Executors grade is too low");
     }
-    output.open(std::string(m_target).append("_shrubbery"), std::ofstream::trunc);
+    output.open(std::string(m_target).append("_shrubbery").c_str(), std::ofstream::trunc);
     if (!output.is_open()) {
         throw std::ios_base::failure("ShrubberyCreationForm::execute(): Couldn't open file");
     }

@@ -2,6 +2,7 @@
 #include <string>
 #include <ostream>
 #include <AForm.hpp>
+#include <stdexcept>
 #include <iostream>
 
 Bureaucrat::Bureaucrat(const std::string & name, int grade) : m_name(name) {
@@ -79,7 +80,7 @@ void Bureaucrat::decrement_grade() {
     m_grade++;
 }
 
-void Bureaucrat::signForm(AForm & to_sign) {
+void Bureaucrat::signForm(AForm & to_sign) const {
     if (to_sign.is_signed() || to_sign.get_sign_grade() < m_grade) {
         if (m_name.empty()) {
             std::cout << "Unnamed bureaucrat";
@@ -117,6 +118,30 @@ void Bureaucrat::signForm(AForm & to_sign) {
         std::cout << to_sign.get_name();
     }
     std::cout << "." << std::endl;
+}
+
+void Bureaucrat::executeForm(const AForm & form) const {
+    try {
+        form.execute(*this);
+    }
+    catch (std::exception & e) {
+        std::cerr << e.what() << std::endl;
+        return;
+    }
+    if (m_name.empty()) {
+        std::cout << "Unnamed bureaucrat";
+    }
+    else {
+        std::cout << m_name;
+    }
+    std::cout << " executed ";
+    if (form.get_name().empty()) {
+        std::cout << "unnamed form";
+    }
+    else {
+        std::cout << form.get_name();
+    }
+    std::cout << std::endl;
 }
 
 std::ostream & operator << (std::ostream & os, const Bureaucrat & obj) {
