@@ -52,7 +52,7 @@ class Bureaucrat {
         void increment_grade();
         void decrement_grade();
 
-        void signForm(Form & to_sign);
+        void signForm(Form & to_sign) const;
 };
 
 std::ostream & operator << (std::ostream & os, const Bureaucrat & obj);

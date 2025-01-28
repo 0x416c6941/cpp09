@@ -79,7 +79,7 @@ void Bureaucrat::decrement_grade() {
     m_grade++;
 }
 
-void Bureaucrat::signForm(Form & to_sign) {
+void Bureaucrat::signForm(Form & to_sign) const {
     if (to_sign.is_signed() || to_sign.get_sign_grade() < m_grade) {
         if (m_name.empty()) {
             std::cout << "Unnamed bureaucrat";
