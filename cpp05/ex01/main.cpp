@@ -34,7 +34,14 @@ int main() {
     catch (std::exception & e) {
         std::cerr << e.what() << std::endl;
     }
+    try {
+        some_form.beSigned(bad_bureaucrat);
+    }
+    catch (std::exception & e) {
+        std::cerr << e.what() << std::endl;
+    }
     some_form.beSigned(good_bureaucrat);
     good_bureaucrat.signForm(some_form);
+    std::cout << some_form << std::endl;
     return 0;
 }
