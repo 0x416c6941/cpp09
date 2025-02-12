@@ -22,8 +22,8 @@ class ScalarConverter {
         union u_value {
             // It's not guaranteed by standard if char is signed or not.
             // It's also not mentioned in the subject, which signedness we need to use,
-            // so we'll just use signed char.
-            signed char c;
+            // so we'll just use unsigned char.
+            unsigned char c;
             int i;
             float f;
             double d;
@@ -89,7 +89,7 @@ class ScalarConverter {
          *              "data_type" set to FLOAT and "overflow" pointing
          *              if conversion overflows or not.
          */
-        //static struct s_value_with_overflow_check weird_atof(const std::string & scalar);
+        static struct s_value_with_overflow_check weird_atof(const std::string & scalar);
 
         /**
          * Converts an initial part of \p scalar to double.
@@ -100,7 +100,7 @@ class ScalarConverter {
          *              "data_type" set to DOUBLE and "overflow" pointing
          *              if conversion overflows or not.
          */
-        //static struct s_value_with_overflow_check weird_atof(const std::string & scalar);
+        static struct s_value_with_overflow_check weird_atod(const std::string & scalar);
 
         // Precision of numbers with floating points for std::setprecision().
         static const int FLOAT_POINTS = 1;
