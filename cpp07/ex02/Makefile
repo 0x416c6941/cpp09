@@ -14,7 +14,7 @@ SRC_FILES = main.cpp
 OBJ_FILES = $(patsubst %.cpp,%.o,$(SRC_FILES))
 
 # Name of the resulting binary file.
-NAME = ex01
+NAME = ex02
 
 # Targets.
 all: $(NAME)
