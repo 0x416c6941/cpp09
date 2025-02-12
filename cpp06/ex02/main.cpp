@@ -64,7 +64,7 @@ void identify(Base & p) {
     std::cout << "identify(): Something went wrong.";
 }
 
-int main(void) {
+int main() {
     Base * obj = generate();
 
     identify(obj);
