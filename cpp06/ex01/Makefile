@@ -14,7 +14,7 @@ SRC_FILES = Serializer.cpp Data.cpp main.cpp
 OBJ_FILES = $(patsubst %.cpp,%.o,$(SRC_FILES))
 
 # Name of the resulting binary file.
-NAME = ex00
+NAME = ex01
 
 # Targets.
 all: $(NAME)
