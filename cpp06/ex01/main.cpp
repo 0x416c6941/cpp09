@@ -5,6 +5,6 @@
 int main() {
     Data data("Hello there!");
 
-    std::cout << (const char *) Serializer::deserialize(Serializer::serialize(&data))->get_data() << std::endl;
+    std::cout << reinterpret_cast<const char *>(Serializer::deserialize(Serializer::serialize(&data))->get_data()) << std::endl;
     return 0;
 }
