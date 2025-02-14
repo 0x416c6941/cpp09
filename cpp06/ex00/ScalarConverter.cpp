@@ -7,13 +7,6 @@
 #include <iostream>
 #include <iomanip>
 
-/**
- * Returns a copy of \p s with spaces trimmed from the beginning and end.
- * @param   s   String to trim spaces from the beginning and end from.
- * @return  Copy of \p s with spaces trimmed from the beginning and end.
- */
-static std::string trim_spaces(const std::string & s);
-
 ScalarConverter::~ScalarConverter() {
 }
 
@@ -223,15 +216,24 @@ ScalarConverter::s_value_with_overflow_check ScalarConverter::weird_atod(const s
     return ret;
 }
 
+// Please note that a string like "  " is NOT a scalar.
+// It's multiple scalars (' ', ' ').
 void ScalarConverter::convert(const std::string & scalar) {
-    std::string scalar_trimmed_spaces = trim_spaces(scalar);
     enum e_type type = USUAL;
-    struct s_value_with_overflow_check c = weird_atoc(scalar_trimmed_spaces),
-                                       i = weird_atoi(scalar_trimmed_spaces),
-                                       f = weird_atof(scalar_trimmed_spaces),
-                                       d = weird_atod(scalar_trimmed_spaces);
+    struct s_value_with_overflow_check c, i, f, d;
 
-    set_type(scalar_trimmed_spaces, type);
+    if (scalar.empty()) {
+        std::cout << "char: impossible" << std::endl
+                  << "int: impossible" << std::endl
+                  << "float: impossible" << std::endl
+                  << "double: impossible" << std::endl;
+        return;
+    }
+    c = weird_atoc(scalar);
+    i = weird_atoi(scalar);
+    f = weird_atof(scalar);
+    d = weird_atod(scalar);
+    set_type(scalar, type);
     std::cout << "char: ";
     if (type != USUAL || c.overflow) {
         std::cout << "impossible" << std::endl;
@@ -279,16 +281,4 @@ void ScalarConverter::convert(const std::string & scalar) {
             std::cout << "double: " << std::fixed << std::setprecision(FLOAT_POINTS) << d.value.d << std::endl;
         }
     }
-}
-
-static std::string trim_spaces(const std::string & s) {
-    std::string ret = s;
-
-    while (ret.length() != 0 && ret.at(0) == ' ') {
-        ret.erase(0, 1);
-    }
-    while (ret.length() != 0 && ret.at(ret.length() - 1) == ' ') {
-        ret.erase(ret.length() - 1, 1);
-    }
-    return ret;
 }
