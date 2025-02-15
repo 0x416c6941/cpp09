@@ -2,9 +2,6 @@
 #include <stdint.h>
 #include <Data.hpp>
 
-Serializer::~Serializer() {
-}
-
 uintptr_t Serializer::serialize(Data * ptr) {
     return reinterpret_cast<uintptr_t>(ptr);
 }
