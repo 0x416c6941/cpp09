@@ -2,8 +2,10 @@
 #include <string>
 #include <cstddef>
 #include <cctype>
-#include <climits>
-#include <cfloat>
+#include <cerrno>
+#include <cstdlib>
+#include <limits>
+#include <stdexcept>
 #include <iostream>
 #include <iomanip>
 
@@ -60,7 +62,7 @@ bool ScalarConverter::is_input_valid(const std::string & scalar) {
     return true;
 }
 
-void ScalarConverter::set_type(const std::string & scalar, enum e_type & type) {
+void ScalarConverter::set_type(const std::string & scalar, enum e_scalar_type & type) {
     if (!is_input_valid(scalar)) {
         type = INVALID_INPUT;
     }
@@ -81,137 +83,75 @@ void ScalarConverter::set_type(const std::string & scalar, enum e_type & type) {
     }
 }
 
-ScalarConverter::s_value_with_overflow_check ScalarConverter::weird_atoc(const std::string & scalar) {
-    struct s_value_with_overflow_check ret = weird_atoi(scalar);
+ScalarConverter::s_value_with_check ScalarConverter::handle_conversion(const std::string & scalar,
+                                                                       enum e_data_type data_type) {
+    struct s_value_with_check ret;
+    char *endptr;                   // For stdtol(), ...
 
-    if (ret.value.i < 0 || ret.value.i > UCHAR_MAX) {
-        ret.overflow = true;
-    }
-    ret.value.c = static_cast<unsigned char>(ret.value.i);
-    ret.data_type = CHARACTER;
-    return ret;
-}
+    // A lot of duplicate code, but I don't care.
+    if (data_type == INTEGER) {
+        long val;
 
-ScalarConverter::s_value_with_overflow_check ScalarConverter::weird_atoi(const std::string & scalar) {
-    struct s_value_with_overflow_check ret;
-    int sign;
-    bool at_least_one_digit;
-    std::size_t i;
-
-    ret.value.i = 0;
-    ret.data_type = INTEGER;
-    ret.overflow = false;
-    if (scalar.length() == 1 && !std::isdigit(scalar.at(0))) {
-        ret.value.i = scalar.at(0);
-        return ret;
-    }
-    sign = 1;
-    at_least_one_digit = false;
-    i = 0;
-    if (scalar.at(i) == '+' || scalar.at(i) == '-') {
-        if (scalar.at(i) == '-') {
-            sign = -1;
-        }
-        i++;
-    }
-    for (; i < scalar.length(); i++) {
-        if (!std::isdigit(scalar.at(i))) {
-            break;
-        }
-        at_least_one_digit = true;
-        if ((ret.value.i * 10 + (scalar.at(i) - '0')) < ret.value.i) {
-            ret.overflow = true;
-            break;
-        }
-        ret.value.i = ret.value.i * 10 + (scalar.at(i) - '0');
-    }
-    if (sign == -1) {
-        ret.value.i *= -1;
-    }
-    if (!at_least_one_digit) {
-        ret.overflow = true;    // Not an overflow, just to show an error.
-    }
-    return ret;
-}
-
-ScalarConverter::s_value_with_overflow_check ScalarConverter::weird_atof(const std::string & scalar) {
-    struct s_value_with_overflow_check ret = weird_atod(scalar);
-
-    // Trying to compare with FLT_MIN would probably need to use DBL_EPSILON.
-    // I'm too lazy to figure out this stuff :p
-    if (ret.value.d > FLT_MAX) {
-        ret.overflow = true;
-    }
-    ret.value.f = static_cast<float>(ret.value.d);
-    ret.data_type = FLOAT;
-    return ret;
-}
-
-ScalarConverter::s_value_with_overflow_check ScalarConverter::weird_atod(const std::string & scalar) {
-    struct s_value_with_overflow_check ret;
-    int sign;
-    bool at_least_one_digit;
-    bool got_dot;
-    std::size_t i;
-    std::size_t j;
-
-    ret.value.d = 0;
-    ret.data_type = DOUBLE;
-    ret.overflow = false;
-    if (scalar.length() == 1 && !std::isdigit(scalar.at(0))) {
-        ret.value.d = scalar.at(0);
-        return ret;
-    }
-    sign = 1;
-    at_least_one_digit = false;
-    got_dot = false;
-    i = 0;
-    if (scalar.at(i) == '+' || scalar.at(i) == '-') {
-        if (scalar.at(i) == '-') {
-            sign = -1;
-        }
-        i++;
-    }
-    for (; i < scalar.length(); i++) {
-        if (scalar.at(i) == 'f') {
-            break;
-        }
-        if (std::isdigit(scalar.at(i))) {
-            at_least_one_digit = true;
-            if (!got_dot) {
-                if ((ret.value.d * 10 + (scalar.at(i) - '0')) < ret.value.d) {
-                    ret.overflow = true;
-                    break;
-                }
-                ret.value.d = ret.value.d * 10 + (scalar.at(i) - '0');
-            }
-            else {
-                double to_add = scalar.at(i) - '0';
-                for (std::size_t k = 0; k < j; k++) {
-                    to_add /= 10;
-                }
-                ret.value.d += to_add;
-                j++;
-            }
-        }
-        else if (scalar.at(i) == '.') {
-            if (got_dot) {
-                ret.overflow = true;    // Not an overflow, just to show an error.
-                break;
-            }
-            got_dot = true;
-            j = 1;
+        ret.data_type = INTEGER;
+        errno = 0;
+        val = strtol(scalar.c_str(), &endptr, 10);
+        if (scalar.at(0) != '\0' && *endptr == '\0'
+            && errno == 0
+            && (val >= std::numeric_limits<int>::min()
+                && val <= std::numeric_limits<int>::max())) {
+            ret.valid = true;
         }
         else {
-            ret.overflow = true;    // Not an overflow, just to show an error.
-            break;
+            ret.valid = false;
         }
+        ret.value.i = static_cast<int>(val);
     }
-    if (sign == -1) {
-        ret.value.d *= -1;
+    else if (data_type == CHARACTER) {
+        long val;
+
+        ret.data_type = CHARACTER;
+        errno = 0;
+        val = strtol(scalar.c_str(), &endptr, 10);
+        if (scalar.at(0) != '\0' && *endptr == '\0' && errno == 0
+            && (val >= std::numeric_limits<unsigned char>::min()
+                && val <= std::numeric_limits<unsigned char>::max())) {
+            ret.valid = true;
+        }
+        else {
+            ret.valid = false;
+        }
+        ret.value.c = static_cast<unsigned char>(val);
     }
-    if (!at_least_one_digit) {
-        ret.overflow = true;    // Not an overflow, just to show an error.
+    else if (data_type == DOUBLE) {
+        double val;
+
+        ret.data_type = DOUBLE;
+        errno = 0;
+        val = strtod(scalar.c_str(), &endptr);
+        if (scalar.at(0) != '\0' && *endptr == '\0' && errno == 0) {
+            ret.valid = true;
+        }
+        else {
+            ret.valid = false;
+        }
+        ret.value.d = val;
+    }
+    else if (data_type == FLOAT) {
+        float val;
+
+        ret.data_type = FLOAT;
+        errno = 0;
+        val = strtof(scalar.c_str(), &endptr);
+        if (scalar.at(0) != '\0' && *endptr == '\0' && errno == 0) {
+            ret.valid = true;
+        }
+        else {
+            ret.valid = false;
+        }
+        ret.value.f = val;
+    }
+    else {
+        throw std::invalid_argument("ScalarConverter::handle_conversion(): Invalid data type");
     }
     return ret;
 }
@@ -219,23 +159,22 @@ ScalarConverter::s_value_with_overflow_check ScalarConverter::weird_atod(const s
 // Please note that a string like "  " is NOT a scalar.
 // It's multiple scalars (' ', ' ').
 void ScalarConverter::convert(const std::string & scalar) {
-    enum e_type type = USUAL;
-    struct s_value_with_overflow_check c, i, f, d;
+    enum e_scalar_type type = USUAL;
+    struct s_value_with_check i, c, d, f;
 
-    if (scalar.empty()) {
+    if (scalar.empty() || !is_input_valid(scalar)) {
         std::cout << "char: impossible" << std::endl
                   << "int: impossible" << std::endl
                   << "float: impossible" << std::endl
                   << "double: impossible" << std::endl;
         return;
     }
-    c = weird_atoc(scalar);
-    i = weird_atoi(scalar);
-    f = weird_atof(scalar);
-    d = weird_atod(scalar);
-    set_type(scalar, type);
+    i = handle_conversion(scalar, INTEGER);
+    c = handle_conversion(scalar, CHARACTER);
+    d = handle_conversion(scalar, DOUBLE);
+    f = handle_conversion(scalar, FLOAT);
     std::cout << "char: ";
-    if (type != USUAL || c.overflow) {
+    if (type != USUAL || !c.valid) {
         std::cout << "impossible" << std::endl;
     }
     else if (!std::isprint(c.value.c)) {
@@ -245,7 +184,7 @@ void ScalarConverter::convert(const std::string & scalar) {
         std::cout << '\'' << c.value.c << '\'' << std::endl;
     }
     std::cout << "int: ";
-    if (type != USUAL || i.overflow) {
+    if (type != USUAL || !i.valid) {
         std::cout << "impossible" << std::endl;
     }
     else {
@@ -268,13 +207,13 @@ void ScalarConverter::convert(const std::string & scalar) {
                   << "double: impossible" << std::endl;
     }
     else {
-        if (f.overflow) {
+        if (!f.valid) {
             std::cout << "float: impossible" << std::endl;
         }
         else {
             std::cout << "float: " << std::fixed << std::setprecision(FLOAT_POINTS) << f.value.f << 'f' << std::endl;
         }
-        if (d.overflow) {
+        if (!d.valid) {
             std::cout << "double: impossible" << std::endl;
         }
         else {
