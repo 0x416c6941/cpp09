@@ -198,6 +198,7 @@ void ScalarConverter::convert(const std::string & scalar) {
                   << "double: impossible" << std::endl;
         return;
     }
+    set_type(scalar, type);
     i = handle_conversion(scalar, INTEGER);
     c = handle_conversion(scalar, CHARACTER);
     d = handle_conversion(scalar, DOUBLE);
