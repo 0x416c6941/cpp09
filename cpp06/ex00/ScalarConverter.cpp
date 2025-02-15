@@ -13,8 +13,8 @@ ScalarConverter::~ScalarConverter() {
 }
 
 bool ScalarConverter::is_input_valid(const std::string & scalar) {
-    std::size_t i;
     bool got_sign;
+    bool got_at_least_one_digit;
     bool got_dot;
     bool got_f;
 
@@ -23,14 +23,16 @@ bool ScalarConverter::is_input_valid(const std::string & scalar) {
     }
     else if (scalar.length() == 1
             || scalar.compare("-inff") == 0 || scalar.compare("+inff") == 0
+            || scalar.compare("nanf") == 0
             || scalar.compare("-inf") == 0 || scalar.compare("+inf") == 0
             || scalar.compare("nan") == 0) {
         return true;
     }
     got_sign = false;
+    got_at_least_one_digit = false;
     got_dot = false;
     got_f = false;
-    for (i = 0; i < scalar.length(); i++) {
+    for (std::size_t i = 0; i < scalar.length(); i++) {
         if (scalar.at(i) == '+' || scalar.at(i) == '-') {
             if (got_sign) {
                 return false;
@@ -44,19 +46,22 @@ bool ScalarConverter::is_input_valid(const std::string & scalar) {
             got_dot = true;
         }
         else if (scalar.at(i) == 'f') {
-            if (got_f) {
+            if (got_f || !got_dot) {
                 return false;
             }
             got_f = true;
         }
-        else if (!std::isdigit(scalar.at(i))) {
-            return false;
+        else if (std::isdigit(scalar.at(i))) {
+            got_at_least_one_digit = true;
+            if (got_f) {
+                return false;   // No digit can follow the enclosing 'f' letter.
+            }
         }
-        if (std::isdigit(scalar.at(i)) && got_f) {
+        else {
             return false;
         }
     }
-    if (!(i >= scalar.length())) {
+    if (!got_at_least_one_digit) {
         return false;
     }
     return true;
@@ -72,6 +77,9 @@ void ScalarConverter::set_type(const std::string & scalar, enum e_scalar_type & 
     else if (scalar.compare("+inff") == 0) {
         type = POSITIVE_INFF;
     }
+    else if (scalar.compare("nanf") == 0) {
+        type = NAN_F;
+    }
     else if (scalar.compare("-inf") == 0) {
         type = NEGATIVE_INF;
     }
@@ -79,7 +87,7 @@ void ScalarConverter::set_type(const std::string & scalar, enum e_scalar_type & 
         type = POSITIVE_INF;
     }
     else if (scalar.compare("nan") == 0) {
-        type = NAN_LITERAL;
+        type = NAN_D;
     }
 }
 
@@ -93,10 +101,14 @@ ScalarConverter::s_value_with_check ScalarConverter::handle_conversion(const std
         long val;
 
         ret.data_type = INTEGER;
+        if (scalar.size() == 1 && !std::isdigit(scalar.at(0))) {
+            ret.value.i = scalar.at(0);
+            ret.valid = true;
+            return ret;
+        }
         errno = 0;
         val = strtol(scalar.c_str(), &endptr, 10);
-        if (scalar.at(0) != '\0' && *endptr == '\0'
-            && errno == 0
+        if (scalar.at(0) != '\0' && errno == 0
             && (val >= std::numeric_limits<int>::min()
                 && val <= std::numeric_limits<int>::max())) {
             ret.valid = true;
@@ -105,18 +117,21 @@ ScalarConverter::s_value_with_check ScalarConverter::handle_conversion(const std
             ret.valid = false;
         }
         ret.value.i = static_cast<int>(val);
-        if (ret.valid == false && scalar.size() == 1) {
-            ret.value.i = scalar.at(0);
-            ret.valid = true;
-        }
     }
     else if (data_type == CHARACTER) {
         long val;
 
         ret.data_type = CHARACTER;
+        if (scalar.size() == 1 && !std::isdigit(scalar.at(0))
+            && scalar.at(0) >= std::numeric_limits<unsigned char>::min()
+            && scalar.at(0) <= std::numeric_limits<unsigned char>::max()) {
+            ret.value.c = static_cast<unsigned char>(scalar.at(0));
+            ret.valid = true;
+            return ret;
+        }
         errno = 0;
         val = strtol(scalar.c_str(), &endptr, 10);
-        if (scalar.at(0) != '\0' && *endptr == '\0' && errno == 0
+        if (scalar.at(0) != '\0' && errno == 0
             && (val >= std::numeric_limits<unsigned char>::min()
                 && val <= std::numeric_limits<unsigned char>::max())) {
             ret.valid = true;
@@ -125,12 +140,6 @@ ScalarConverter::s_value_with_check ScalarConverter::handle_conversion(const std
             ret.valid = false;
         }
         ret.value.c = static_cast<unsigned char>(val);
-        if (ret.valid == false && scalar.size() == 1
-            && scalar.at(0) >= std::numeric_limits<unsigned char>::min()
-            && scalar.at(0) <= std::numeric_limits<unsigned char>::max()) {
-            ret.value.c = static_cast<unsigned char>(scalar.at(0));
-            ret.valid = true;
-        }
     }
     else if (data_type == DOUBLE) {
         double val;
@@ -138,7 +147,8 @@ ScalarConverter::s_value_with_check ScalarConverter::handle_conversion(const std
         ret.data_type = DOUBLE;
         errno = 0;
         val = strtod(scalar.c_str(), &endptr);
-        if (scalar.at(0) != '\0' && *endptr == '\0' && errno == 0) {
+        if (scalar.at(0) != '\0' && (*endptr == '\0' || *endptr == 'f')
+            && errno == 0) {
             ret.valid = true;
         }
         else {
@@ -156,7 +166,8 @@ ScalarConverter::s_value_with_check ScalarConverter::handle_conversion(const std
         ret.data_type = FLOAT;
         errno = 0;
         val = strtof(scalar.c_str(), &endptr);
-        if (scalar.at(0) != '\0' && *endptr == '\0' && errno == 0) {
+        if (scalar.at(0) != '\0' && (*endptr == '\0' || *endptr == 'f')
+            && errno == 0) {
             ret.valid = true;
         }
         else {
@@ -216,7 +227,7 @@ void ScalarConverter::convert(const std::string & scalar) {
         std::cout << "float: +inff" << std::endl
                   << "double: +inf" << std::endl;
     }
-    else if (type == NAN_LITERAL) {
+    else if (type == NAN_F || type == NAN_D) {
         std::cout << "float: nanf" << std::endl
                   << "double: nan" << std::endl;
     }

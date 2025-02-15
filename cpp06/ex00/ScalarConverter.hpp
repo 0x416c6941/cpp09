@@ -15,7 +15,8 @@ class ScalarConverter {
             POSITIVE_INFF,
             NEGATIVE_INF,
             POSITIVE_INF,
-            NAN_LITERAL
+            NAN_F,
+            NAN_D
         };
 
         union u_value {
