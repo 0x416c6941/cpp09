@@ -7,6 +7,7 @@ class ScalarConverter {
         ScalarConverter();
         ScalarConverter(const ScalarConverter & src);
         ScalarConverter & operator = (const ScalarConverter & src);
+        virtual ~ScalarConverter();
 
         enum e_scalar_type {
             INVALID_INPUT,
@@ -70,7 +71,5 @@ class ScalarConverter {
         static const int FLOAT_POINTS = 1;
 
     public:
-        virtual ~ScalarConverter();
-
         static void convert(const std::string & scalar);
 };

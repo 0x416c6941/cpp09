@@ -9,9 +9,6 @@
 #include <iostream>
 #include <iomanip>
 
-ScalarConverter::~ScalarConverter() {
-}
-
 bool ScalarConverter::is_input_valid(const std::string & scalar) {
     bool got_sign;
     bool got_at_least_one_digit;
