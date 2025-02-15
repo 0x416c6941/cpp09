@@ -105,6 +105,10 @@ ScalarConverter::s_value_with_check ScalarConverter::handle_conversion(const std
             ret.valid = false;
         }
         ret.value.i = static_cast<int>(val);
+        if (ret.valid == false && scalar.size() == 1) {
+            ret.value.i = scalar.at(0);
+            ret.valid = true;
+        }
     }
     else if (data_type == CHARACTER) {
         long val;
@@ -121,6 +125,12 @@ ScalarConverter::s_value_with_check ScalarConverter::handle_conversion(const std
             ret.valid = false;
         }
         ret.value.c = static_cast<unsigned char>(val);
+        if (ret.valid == false && scalar.size() == 1
+            && scalar.at(0) >= std::numeric_limits<unsigned char>::min()
+            && scalar.at(0) <= std::numeric_limits<unsigned char>::max()) {
+            ret.value.c = static_cast<unsigned char>(scalar.at(0));
+            ret.valid = true;
+        }
     }
     else if (data_type == DOUBLE) {
         double val;
@@ -135,6 +145,10 @@ ScalarConverter::s_value_with_check ScalarConverter::handle_conversion(const std
             ret.valid = false;
         }
         ret.value.d = val;
+        if (ret.valid == false && scalar.size() == 1) {
+            ret.value.d = scalar.at(0);
+            ret.valid = true;
+        }
     }
     else if (data_type == FLOAT) {
         float val;
@@ -149,6 +163,10 @@ ScalarConverter::s_value_with_check ScalarConverter::handle_conversion(const std
             ret.valid = false;
         }
         ret.value.f = val;
+        if (ret.valid == false && scalar.size() == 1) {
+            ret.value.f = scalar.at(0);
+            ret.valid = true;
+        }
     }
     else {
         throw std::invalid_argument("ScalarConverter::handle_conversion(): Invalid data type");
