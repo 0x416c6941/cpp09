@@ -52,6 +52,7 @@ Array<T>::~Array() {
 template <typename T>
 T & Array<T>::operator [] (int idx) {
     if (idx < 0 || (std::size_t) idx >= m_arr_size) {
+        // I mean it's derived from std::exception, so it should be fine.
         throw std::out_of_range("Array::operator [] (): Index out of bounds");
     }
     return m_arr[idx];
