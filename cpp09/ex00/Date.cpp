@@ -27,8 +27,7 @@ Date::Date(const std::string & date)
 	}
 	this->day = strtol(date_c_str_pos, &date_c_str_pos, STRTOL_BASE);
 	// Basic day range check.
-	if ((*date_c_str_pos != ',' && *date_c_str_pos != '\0'
-			&& *date_c_str_pos != ' ') || errno == ERANGE
+	if (errno == ERANGE
 		|| this->day < 1 || this->day > 31)
 	{
 		throw invalid_date(EXCEPTION_MSG);
