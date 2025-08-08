@@ -50,17 +50,17 @@ class Date
 		 * encounters invalid argument.
 		 * @class	invalid_date
 		 */
-		class invalid_date: public std::exception
+		class InvalidDate: public std::exception
 		{
 			private:
 				std::string msg;
 
 			public:
-				invalid_date(const char * msg);
-				invalid_date(const std::string & msg);
-				invalid_date(const invalid_date & src);
-				invalid_date & operator = (const invalid_date & src);
-				virtual ~invalid_date() throw();
+				InvalidDate(const char * msg);
+				InvalidDate(const std::string & msg);
+				InvalidDate(const InvalidDate & src);
+				InvalidDate & operator = (const InvalidDate & src);
+				virtual ~InvalidDate() throw();
 
 				virtual const char * what() const throw();
 		};

@@ -20,27 +20,27 @@ Date::Date(const std::string & date)
 	if (*date_c_str_pos++ != '-' || errno == ERANGE
 		|| this->year < MIN_YEAR || this->year > this->MAX_POSSIBLE_YEAR)
 	{
-		throw invalid_date(EXCEPTION_MSG);
+		throw InvalidDate(EXCEPTION_MSG);
 	}
 	this->month = strtol(date_c_str_pos, &date_c_str_pos, STRTOL_BASE);
 	if (*date_c_str_pos++ != '-' || errno == ERANGE
 		|| this->month < 1 || this->month > 12)
 	{
-		throw invalid_date(EXCEPTION_MSG);
+		throw InvalidDate(EXCEPTION_MSG);
 	}
 	this->day = strtol(date_c_str_pos, &date_c_str_pos, STRTOL_BASE);
 	// Basic day range check.
 	if (errno == ERANGE
 		|| this->day < 1 || this->day > 31)
 	{
-		throw invalid_date(EXCEPTION_MSG);
+		throw InvalidDate(EXCEPTION_MSG);
 	}
 	// Day range check for months w/ only 30 days.
 	else if ((this->month == 4 || this->month == 6
 			|| this->month == 9 || this->month == 11)
 		&& day > 30)
 	{
-		throw invalid_date(EXCEPTION_MSG);
+		throw InvalidDate(EXCEPTION_MSG);
 	}
 	// Day range check for February and leap year.
 	else if (this->month == 2)
@@ -51,12 +51,12 @@ Date::Date(const std::string & date)
 		{
 			if (this->day > 29)
 			{
-				throw invalid_date(EXCEPTION_MSG);
+				throw InvalidDate(EXCEPTION_MSG);
 			}
 		}
 		else if (this->day > 28)
 		{
-			throw invalid_date(EXCEPTION_MSG);
+			throw InvalidDate(EXCEPTION_MSG);
 		}
 	}
 	this->processed_bytes_in_date_string = static_cast<size_t>
@@ -114,22 +114,22 @@ bool Date::operator < (const Date & other) const
 	return false;	// Day is same or bigger.
 }
 
-Date::invalid_date::invalid_date(const char * msg)
+Date::InvalidDate::InvalidDate(const char * msg)
 	: msg(msg)
 {
 }
 
-Date::invalid_date::invalid_date(const std::string & msg)
+Date::InvalidDate::InvalidDate(const std::string & msg)
 	: msg(msg)
 {
 }
 
-Date::invalid_date::invalid_date(const Date::invalid_date & src)
+Date::InvalidDate::InvalidDate(const Date::InvalidDate & src)
 	: msg(src.msg)
 {
 }
 
-Date::invalid_date & Date::invalid_date::operator = (const Date::invalid_date & src)
+Date::InvalidDate & Date::InvalidDate::operator = (const Date::InvalidDate & src)
 {
 	if (this == &src)
 	{
@@ -139,11 +139,11 @@ Date::invalid_date & Date::invalid_date::operator = (const Date::invalid_date & 
 	return *this;
 }
 
-Date::invalid_date::~invalid_date() throw()
+Date::InvalidDate::~InvalidDate() throw()
 {
 }
 
-const char * Date::invalid_date::what() const throw()
+const char * Date::InvalidDate::what() const throw()
 {
 	return msg.c_str();
 }
