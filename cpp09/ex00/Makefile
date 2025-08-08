@@ -1,14 +1,14 @@
 # Compiler options.
 CXX = clang++
 CXXFLAGS = -I$(INC_DIR) -std=c++98					\
-	 -Wall -Wextra -Weffc++ -Wsign-conversion -pedantic -Werror	\
-	 -g -fsanitize=address
+		-Wall -Wextra -Wsign-conversion -pedantic -Werror	\
+		-g
 
 # Headers.
 INC_DIR = .
 
 # Source files.
-SRC_FILES = main.cpp BitcoinExchange.cpp
+SRC_FILES = main.cpp
 
 # Object files.
 OBJ_FILES = $(patsubst %.cpp,%.o,$(SRC_FILES))
@@ -20,7 +20,7 @@ NAME = btc
 all: $(NAME)
 
 $(NAME): $(OBJ_FILES)
-	$(CXX) $(CXXFLAGS) $(OBJ_FILES) -o $@
+	$(CXX) $(CXXFLAGS) $^ -o $@
 
 %.o: %.c
 	$(CXX) $(CXXFLAGS) -c $< -o $@
@@ -34,4 +34,4 @@ fclean: clean
 	rm -f $(NAME)
 
 .PHONY: re
-re: fclean all
+re: fclean $(NAME)
