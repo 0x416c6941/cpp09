@@ -7,6 +7,7 @@ int main(int argc, char * argv[])
 {
 	const int EXPECTED_ARGS = 2, FILE_PATH = 1;
 	const std::string OPEN_FAIL = "Error: could not open file.";
+	std::ifstream file;
 
 	if (argc != EXPECTED_ARGS)
 	{

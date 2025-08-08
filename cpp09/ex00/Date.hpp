@@ -11,6 +11,12 @@
 class Date
 {
 	private:
+		// We have neither `cstdint` nor `long long` available in C++98.
+		// Therefore, we need to cap the maximum possible year
+		// to prevent any overflows in
+		// `get_reference_point_for_date_comparison()`.
+		const static long MAX_POSSIBLE_YEAR = 9999;
+
 		// Storing as long is easiest due to usage of `strtol()`.
 		long year, month, day;
 
@@ -34,6 +40,8 @@ class Date
 		Date & operator = (const Date & src);
 		virtual ~Date();
 
+		// For `std::map`, where `Date` is key,
+		// and for `std::map<Date, ...>::{lower_bound,upper_bound}'.
 		bool operator < (const Date & other) const;
 
 		/**
@@ -61,6 +69,24 @@ class Date
 		long get_month() const;
 		long get_day() const;
 		size_t get_processed_bytes_in_date_string() const;
+
+		/**
+		 * Get the reference point to calculate the difference
+		 * between two dates by using Howard Hinnant's formula.
+		 * @warning	Epoch is not 1st of January, 1 AD,
+		 * 		but some arbitrary, yet consistent,
+		 * 		reference point.
+		 * @return	Reference point for two dates' comparison.
+		 */
+		long get_reference_point_for_date_comparison() const;
 };
+
+/**
+ * Return difference in days between \p lhs and \p rhs.
+ * @param	lhs	First date.
+ * @param	rhs	Second date.
+ * @return	Difference in days between \p lhs and \p rhs.
+ */
+long operator - (const Date & lhs, const Date & rhs);
 
 #endif	// DATE_HPP

@@ -9,13 +9,16 @@ Date::Date(const std::string & date)
 	const char * date_c_str_begin = date.c_str();
 	char * date_c_str_pos = (char *) date.c_str();
 	const int STRTOL_BASE = 10;
+	// Year must be at least 2 AD, since Howard Hinnant's formula
+	// works only after March, 1 AD.
+	const long MIN_YEAR = 2;
 	const std::string EXCEPTION_MSG = std::string("Date::Date(const std::string &): ")
 			+ "Date string is invalid.";
 
 	errno = 0;
 	this->year = strtol(date_c_str_pos, &date_c_str_pos, STRTOL_BASE);
 	if (*date_c_str_pos++ != '-' || errno == ERANGE
-		|| this->year < 1)
+		|| this->year < MIN_YEAR || this->year > this->MAX_POSSIBLE_YEAR)
 	{
 		throw invalid_date(EXCEPTION_MSG);
 	}
@@ -163,4 +166,21 @@ long Date::get_day() const
 size_t Date::get_processed_bytes_in_date_string() const
 {
 	return this->processed_bytes_in_date_string;
+}
+
+long Date::get_reference_point_for_date_comparison() const
+{
+	const long Y = this->year;
+
+	// It's guaranteed that nothing would overflow
+	// thanks to the maximum possible year cap
+	// with `this->MAX_POSSIBLE_YEAR`.
+	return 365L * Y + Y / 4 - Y / 100 + Y / 400
+		+ (153 * this->month - 457) / 5 + this->day - 306;
+}
+
+long operator - (const Date & lhs, const Date & rhs)
+{
+	return lhs.get_reference_point_for_date_comparison()
+		- rhs.get_reference_point_for_date_comparison();
 }
