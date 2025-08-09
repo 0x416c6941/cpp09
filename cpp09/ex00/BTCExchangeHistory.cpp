@@ -4,6 +4,7 @@
 #include <cerrno>
 #include <cstdlib>
 #include <fstream>
+#include <cmath>
 
 BTCExchangeHistory::BTCExchangeHistory()
 {
@@ -63,6 +64,42 @@ BTCExchangeHistory::HistoryFileIsCorrupted::~HistoryFileIsCorrupted() throw()
 }
 
 const char * BTCExchangeHistory::HistoryFileIsCorrupted::what() const throw()
+{
+	return msg.c_str();
+}
+
+BTCExchangeHistory::HistoryIsEmpty::HistoryIsEmpty(const char * msg)
+	: msg(msg)
+{
+}
+
+BTCExchangeHistory::HistoryIsEmpty::HistoryIsEmpty(const std::string & msg)
+	: msg(msg)
+{
+}
+
+BTCExchangeHistory::HistoryIsEmpty::HistoryIsEmpty(
+		const BTCExchangeHistory::HistoryIsEmpty & src)
+	: msg(src.msg)
+{
+}
+
+BTCExchangeHistory::HistoryIsEmpty & BTCExchangeHistory::HistoryIsEmpty::operator = (
+		const BTCExchangeHistory::HistoryIsEmpty & src)
+{
+	if (this == &src)
+	{
+		return *this;
+	}
+	this->msg = src.msg;
+	return *this;
+}
+
+BTCExchangeHistory::HistoryIsEmpty::~HistoryIsEmpty() throw()
+{
+}
+
+const char * BTCExchangeHistory::HistoryIsEmpty::what() const throw()
 {
 	return msg.c_str();
 }
@@ -266,4 +303,51 @@ void BTCExchangeHistory::read_history(std::ifstream & file)
 		throw HistoryFileIsCorrupted(MSG_PREFIX
 				+ "DB didn't contain a single entry.");
 	}
+}
+
+double BTCExchangeHistory::get_btc_exchange_rate(const Date & date)
+{
+	// "lower_bound" and "upper_bound", respectively.
+	std::map<Date, double>::const_iterator lb, ub, last_element;
+	const std::string MSG_PREFIX = "BTCExchangeHistory::get_btc_exchange_rate(): ";
+
+	if (this->history.empty())
+	{
+		throw HistoryIsEmpty(MSG_PREFIX + "History is empty.");
+	}
+	// "... first element that is not less than the given key ..."
+	lb = this->history.lower_bound(date);
+	// "... first element that is greater than the given key ..."
+	ub = this->history.upper_bound(date);
+	// If `ub` (greater date) doesn't exist.
+	if (ub == this->history.end())
+	{
+		// If `lb` (not smaller date) also doesn't exist.
+		if (lb == this->history.end())
+		{
+			last_element = this->history.end();
+			// We've checked if `history`
+			// isn't empty in the beginning.
+			return (--last_element)->second;
+		}
+		// If `lb` (so basically exact at this point) exists.
+		return lb->second;
+	}
+	// If both exist.
+	if (lb == ub)
+	{
+		// Exact date wasn't found and now
+		// both `lb` and `ub` point to the same element.
+		if (lb != this->history.begin())
+		{
+			--lb;
+		}
+	}
+	// "Be careful to use the lower date and not the upper one",
+	// hence using "<=".
+	if (labs(date - lb->first) <= labs(date - ub->first))
+	{
+		return lb->second;
+	}
+	return ub->second;
 }

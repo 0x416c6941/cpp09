@@ -72,6 +72,22 @@ class BTCExchangeHistory
 				virtual const char * what() const throw();
 		};
 
+		class HistoryIsEmpty: public std::exception
+		{
+			private:
+				std::string msg;
+
+			public:
+				HistoryIsEmpty(const char * msg);
+				HistoryIsEmpty(const std::string & msg);
+				HistoryIsEmpty(const HistoryIsEmpty & src);
+				HistoryIsEmpty & operator = (
+						const HistoryIsEmpty & src);
+				virtual ~HistoryIsEmpty() throw();
+
+				virtual const char * what() const throw();
+		};
+
 		/**
 		 * Read history of BTC exchange rate from \p file.
 		 * @warning	If history was already read,
@@ -84,6 +100,19 @@ class BTCExchangeHistory
 		 * 			across multiple years.
 		 */
 		void read_history(std::ifstream & file);
+
+		/**
+		 * Get the BTC exchange rate on \p date.
+		 * If no such \p date is found, the closest one is found.
+		 * If there are two closest (lower and upper) dates,
+		 * the lower one will be chosen.
+		 * @throw	HistoryIsEmpty	`history` is empty.
+		 * @param	date	Date, on which to find
+		 * 			the BTC exchange rate.
+		 * @return	BTC exchange rate for \p date
+		 * 		or for the closest date, if \p is not found.
+		 */
+		double get_btc_exchange_rate(const Date & date);
 };
 
 #endif	// BTCEXCHANGEHISTORY_HPP
