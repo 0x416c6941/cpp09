@@ -104,6 +104,42 @@ const char * BTCExchangeHistory::HistoryIsEmpty::what() const throw()
 	return msg.c_str();
 }
 
+BTCExchangeHistory::NoAvailableLowerDate::NoAvailableLowerDate(const char * msg)
+	: msg(msg)
+{
+}
+
+BTCExchangeHistory::NoAvailableLowerDate::NoAvailableLowerDate(const std::string & msg)
+	: msg(msg)
+{
+}
+
+BTCExchangeHistory::NoAvailableLowerDate::NoAvailableLowerDate(
+		const BTCExchangeHistory::NoAvailableLowerDate & src)
+	: msg(src.msg)
+{
+}
+
+BTCExchangeHistory::NoAvailableLowerDate & BTCExchangeHistory::NoAvailableLowerDate::operator = (
+		const BTCExchangeHistory::NoAvailableLowerDate & src)
+{
+	if (this == &src)
+	{
+		return *this;
+	}
+	this->msg = src.msg;
+	return *this;
+}
+
+BTCExchangeHistory::NoAvailableLowerDate::~NoAvailableLowerDate() throw()
+{
+}
+
+const char * BTCExchangeHistory::NoAvailableLowerDate::what() const throw()
+{
+	return msg.c_str();
+}
+
 void BTCExchangeHistory::handle_first_line(const std::string & line,
 		enum e_first_db_column & first_column)
 {
@@ -309,8 +345,7 @@ void BTCExchangeHistory::read_history(std::ifstream & file)
 
 double BTCExchangeHistory::get_btc_exchange_rate(const Date & date)
 {
-	// "lower_bound" and "upper_bound", respectively.
-	std::map<Date, double>::const_iterator lb, ub, last_element;
+	std::map<Date, double>::const_iterator it;
 	const std::string MSG_PREFIX = "BTCExchangeHistory::get_btc_exchange_rate(): ";
 
 	if (this->history.empty())
@@ -318,38 +353,29 @@ double BTCExchangeHistory::get_btc_exchange_rate(const Date & date)
 		throw HistoryIsEmpty(MSG_PREFIX + "History is empty.");
 	}
 	// "... first element that is not less than the given key ..."
-	lb = this->history.lower_bound(date);
-	// "... first element that is greater than the given key ..."
-	ub = this->history.upper_bound(date);
-	// If `ub` (greater date) doesn't exist.
-	if (ub == this->history.end())
+	it = this->history.lower_bound(date);
+	if (it == this->history.end())
 	{
-		// If `lb` (not smaller date) also doesn't exist.
-		if (lb == this->history.end())
+		// We've checked if `history` isn't empty in the beginning.
+		it = this->history.end();
+		return (--it)->second;
+	}
+	else if (date < it->first)
+	{
+		// It's really unclear what we should do in this case.
+		// Subject specify only this:
+		// "Be careful to use the lower date and not the upper one",
+		// and in their example there's a date "2011-01-09",
+		// which is clearly closer to "2011-01-10"
+		// rather than "2011-01-07", yet they still used lower date.
+		// So, if it means we shall never use the upper date,
+		// we should clearly throw an exception here.
+		if (it == this->history.begin())
 		{
-			last_element = this->history.end();
-			// We've checked if `history`
-			// isn't empty in the beginning.
-			return (--last_element)->second;
+			throw NoAvailableLowerDate(MSG_PREFIX
+					+ "No lower date is available in history.");
 		}
-		// If `lb` (so basically exact at this point) exists.
-		return lb->second;
+		return (--it)->second;
 	}
-	// If both exist.
-	if (lb == ub)
-	{
-		// Exact date wasn't found and now
-		// both `lb` and `ub` point to the same element.
-		if (lb != this->history.begin())
-		{
-			--lb;
-		}
-	}
-	// "Be careful to use the lower date and not the upper one",
-	// hence using "<=".
-	if (labs(date - lb->first) <= labs(date - ub->first))
-	{
-		return lb->second;
-	}
-	return ub->second;
+	return it->second;
 }

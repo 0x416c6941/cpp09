@@ -56,6 +56,12 @@ class BTCExchangeHistory
 		BTCExchangeHistory & operator = (const BTCExchangeHistory & src);
 		virtual ~BTCExchangeHistory();
 
+		/**
+		 * An exception that's thrown when
+		 * `BTCExchangeHistory::read_history(std::ifstream &)`
+		 * encounters some history file corruption.
+		 * @class	HistoryFileIsCorrupted
+		 */
 		class HistoryFileIsCorrupted: public std::exception
 		{
 			private:
@@ -72,6 +78,12 @@ class BTCExchangeHistory
 				virtual const char * what() const throw();
 		};
 
+		/**
+		 * An exception that's thrown when
+		 * `BTCExchangeHistory::get_btc_exchange_rate(const Date &)`
+		 * is called, yet history wasn't loaded yet.
+		 * @class	HistoryIsEmpty
+		 */
 		class HistoryIsEmpty: public std::exception
 		{
 			private:
@@ -84,6 +96,29 @@ class BTCExchangeHistory
 				HistoryIsEmpty & operator = (
 						const HistoryIsEmpty & src);
 				virtual ~HistoryIsEmpty() throw();
+
+				virtual const char * what() const throw();
+		};
+
+		/**
+		 * An exception that's thrown when
+		 * `BTCExchangeHistory::get_btc_exchange_rate(const Date &)`
+		 * is called, yet there's no available lower date in `history`
+		 * ("Be careful to use the lower date and not the upper one").
+		 * @class	NoAvailableLowerDate
+		 */
+		class NoAvailableLowerDate: public std::exception
+		{
+			private:
+				std::string msg;
+
+			public:
+				NoAvailableLowerDate(const char * msg);
+				NoAvailableLowerDate(const std::string & msg);
+				NoAvailableLowerDate(const NoAvailableLowerDate & src);
+				NoAvailableLowerDate & operator = (
+						const NoAvailableLowerDate & src);
+				virtual ~NoAvailableLowerDate() throw();
 
 				virtual const char * what() const throw();
 		};
@@ -106,7 +141,9 @@ class BTCExchangeHistory
 		 * If no such \p date is found, the closest one is found.
 		 * If there are two closest (lower and upper) dates,
 		 * the lower one will be chosen.
-		 * @throw	HistoryIsEmpty	`history` is empty.
+		 * @throw	HistoryIsEmpty		`history` is empty.
+		 * @throw	NoAvailableLowerDate	Only upper closest date
+		 * 					to \p date was found.
 		 * @param	date	Date, on which to find
 		 * 			the BTC exchange rate.
 		 * @return	BTC exchange rate for \p date

@@ -48,7 +48,7 @@ class Date
 		 * An exception that's thrown when
 		 * `Date::Date(const std::string &)`
 		 * encounters invalid argument.
-		 * @class	invalid_date
+		 * @class	InvalidDate
 		 */
 		class InvalidDate: public std::exception
 		{
