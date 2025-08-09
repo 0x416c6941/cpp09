@@ -38,6 +38,18 @@ class BTCExchangeHistory
 		void handle_first_line(const std::string & line,
 				enum e_first_db_column & first_column);
 
+		/**
+		 * Append entry from \p line to `history`.
+		 * @throw	HistoryFileIsCorrupted	\p line is corrupted.
+		 * @param	line		Line from file with
+		 * 				BTC exchange rate history.
+		 * @param	first_column	What column in the DB
+		 * 				is first:
+		 * 				"date" or "exchange_rate".
+		 */
+		void append_history(const std::string & line,
+				const enum e_first_db_column & first_column);
+
 	public:
 		BTCExchangeHistory();
 		BTCExchangeHistory(const BTCExchangeHistory & src);

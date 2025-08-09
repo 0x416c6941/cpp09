@@ -2,7 +2,7 @@
 CXX = clang++
 CXXFLAGS = -I$(INC_DIR) -std=c++98					\
 		-Wall -Wextra -Wsign-conversion -pedantic -Werror	\
-		-g
+		-g -fsanitize=address
 
 # Headers.
 INC_DIR = .

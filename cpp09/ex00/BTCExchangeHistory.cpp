@@ -1,5 +1,8 @@
 #include "BTCExchangeHistory.hpp"
 #include <string>
+#include "Date.hpp"
+#include <cerrno>
+#include <cstdlib>
 #include <fstream>
 
 BTCExchangeHistory::BTCExchangeHistory()
@@ -125,24 +128,119 @@ void BTCExchangeHistory::handle_first_line(const std::string & line,
 	}
 }
 
+// This method contains duplicate code.
+// Too lazy to split it, sorry.
+void BTCExchangeHistory::append_history(const std::string & line,
+		const enum e_first_db_column & first_column)
+{
+	const char * line_c_str_begin;
+	char * line_c_str_pos;
+	Date * date = NULL;
+	double val;
+	size_t processed_bytes = 0;
+	const std::string MSG_PREFIX = "BTCExchangeRate::append_history(): ";
+	const std::string INVALID_DATE_MSG = "Some date is invalid.";
+	const std::string INVALID_RATE_MSG = "Some exchange rate is invalid.";
+
+	// First column.
+	if (first_column == DATE)
+	{
+		try
+		{
+			date = new Date(line.substr(processed_bytes));
+		}
+		catch (const Date::InvalidDate & e)
+		{
+			throw HistoryFileIsCorrupted(MSG_PREFIX
+					+ INVALID_DATE_MSG);
+		}
+		processed_bytes += date->get_processed_bytes_in_date_string();
+	}
+	else if (first_column == EXCHANGE_RATE)
+	{
+		line_c_str_begin = line.c_str() + processed_bytes;
+		errno = 0;
+		val = strtod(line_c_str_begin, &line_c_str_pos);
+		// We don't need DBL_EPSILON to compare with range.
+		// DBL_EPSILON is only used when comparing
+		// with a specific value.
+		if (errno == ERANGE || val < 0)
+		{
+			throw HistoryFileIsCorrupted(MSG_PREFIX
+					+ INVALID_RATE_MSG);
+		}
+		processed_bytes += static_cast<size_t> (
+				line_c_str_pos - line_c_str_begin);
+	}
+	// ',' after first column.
+	if (!(processed_bytes < line.length())
+		|| line.at(processed_bytes) != ',')
+	{
+		throw HistoryFileIsCorrupted(MSG_PREFIX
+				+ "No comma separator between columns.");
+	}
+	processed_bytes++;	// Skipping ','.
+	// Second column.
+	if (first_column == DATE)
+	{
+		line_c_str_begin = line.c_str() + processed_bytes;
+		errno = 0;
+		val = strtod(line_c_str_begin, &line_c_str_pos);
+		// We don't need DBL_EPSILON to compare with range.
+		// DBL_EPSILON is only used when comparing
+		// with a specific value.
+		if (errno == ERANGE || val < 0)
+		{
+			delete date;
+			throw HistoryFileIsCorrupted(MSG_PREFIX
+					+ INVALID_RATE_MSG);
+		}
+		processed_bytes += static_cast<size_t> (
+				line_c_str_pos - line_c_str_begin);
+	}
+	else if (first_column == EXCHANGE_RATE)
+	{
+		try
+		{
+			date = new Date(line.substr(processed_bytes));
+		}
+		catch (const Date::InvalidDate & e)
+		{
+			throw HistoryFileIsCorrupted(MSG_PREFIX
+					+ INVALID_DATE_MSG);
+		}
+		processed_bytes += date->get_processed_bytes_in_date_string();
+	}
+	// Checking if line ends after second column.
+	if (line.length() != processed_bytes)
+	{
+		delete date;
+		throw HistoryFileIsCorrupted(MSG_PREFIX
+				+ "Got data after second column.");
+	}
+	else if (this->history.find(*date) != this->history.end())
+	{
+		delete date;
+		throw HistoryFileIsCorrupted(MSG_PREFIX
+				+ "Some date is present multiple times.");
+	}
+	// Appending to `this->history`.
+	this->history[*date] = val;
+	delete date;
+}
+
 void BTCExchangeHistory::read_history(std::ifstream & file)
 {
-	bool got_at_least_first_line = false;
+	bool got_first_line = false;
 	enum e_first_db_column first_column;
 	std::string line;
 	const std::string MSG_PREFIX = "BTCExchangeHistory::read_history(): ";
-	const std::string EMPTY_FILE_MSG = "File is empty.";
 	const std::string FILE_CORRUPTION_MSG = "File is corrupted.";
 
 	while (std::getline(file, line))
 	{
 		if (file.eof())
 		{
-			if (!got_at_least_first_line)
-			{
-				throw HistoryFileIsCorrupted(MSG_PREFIX
-						+ EMPTY_FILE_MSG);
-			}
 			break;
 		}
 		else if (file.fail())
@@ -150,12 +248,22 @@ void BTCExchangeHistory::read_history(std::ifstream & file)
 			throw HistoryFileIsCorrupted(MSG_PREFIX
 					+ FILE_CORRUPTION_MSG);
 		}
-		if (!got_at_least_first_line)
+		if (!got_first_line)
 		{
 			this->handle_first_line(line, first_column);
-			got_at_least_first_line = true;
-			// TODO: remove this.
-			break;
+			got_first_line = true;
 		}
+		else
+		{
+			this->append_history(line, first_column);
+		}
+	}
+	// I believe the database should be considered valid
+	// if there's at least one entry,
+	// not just the first line w/ column order.
+	if (this->history.empty())
+	{
+		throw HistoryFileIsCorrupted(MSG_PREFIX
+				+ "DB didn't contain a single entry.");
 	}
 }

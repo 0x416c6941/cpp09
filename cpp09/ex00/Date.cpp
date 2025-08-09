@@ -7,7 +7,7 @@
 Date::Date(const std::string & date)
 {
 	const char * date_c_str_begin = date.c_str();
-	char * date_c_str_pos = (char *) date.c_str();
+	char * date_c_str_pos;
 	const int STRTOL_BASE = 10;
 	// Year must be at least 2 AD, since Howard Hinnant's formula
 	// works only after March, 1 AD.
@@ -16,7 +16,7 @@ Date::Date(const std::string & date)
 			+ "Date string is invalid.";
 
 	errno = 0;
-	this->year = strtol(date_c_str_pos, &date_c_str_pos, STRTOL_BASE);
+	this->year = strtol(date_c_str_begin, &date_c_str_pos, STRTOL_BASE);
 	if (*date_c_str_pos++ != '-' || errno == ERANGE
 		|| this->year < MIN_YEAR || this->year > this->MAX_POSSIBLE_YEAR)
 	{
