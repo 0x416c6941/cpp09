@@ -1,23 +1,51 @@
 #include <string>
 #include <iostream>
-#include <cstdlib>
 #include <fstream>
+#include <cstdlib>
+#include "BTCExchangeHistory.hpp"
+#include <stdexcept>
 
 int main(int argc, char * argv[])
 {
-	const int EXPECTED_ARGS = 2, FILE_PATH = 1;
-	const std::string OPEN_FAIL = "Error: could not open file.";
+	const int EXPECTED_ARGS = 2;
+	const std::string INPUT_FILE_OPEN_FAIL = "Error: could not open file.";
+	const std::string DB_FILE = "data.csv";
+	const int FILE_PATH = 1;
 	std::ifstream file;
+	BTCExchangeHistory btc_exchange_history;
 
 	if (argc != EXPECTED_ARGS)
 	{
-		std::cerr << OPEN_FAIL << std::endl;
+		std::cerr << INPUT_FILE_OPEN_FAIL << std::endl;
 		return EXIT_FAILURE;
 	}
+	file.open(DB_FILE.c_str());
+	if (!file.is_open())
+	{
+		std::cerr << "Error: Couldn't open the DB file "
+				<< DB_FILE << '.' << std::endl;
+		return EXIT_FAILURE;
+	}
+	try
+	{
+		btc_exchange_history.read_history(file);
+	}
+	catch (const BTCExchangeHistory::HistoryFileIsCorrupted & e)
+	{
+		std::cerr << "Error: DB file "
+				<< DB_FILE << " is corrupted." << std::endl;
+		return EXIT_FAILURE;
+	}
+	catch (const std::bad_alloc & e)
+	{
+		std::cerr << "Error: OOM." << std::endl;
+		return EXIT_FAILURE;
+	}
+	file.close();
 	file.open(argv[FILE_PATH]);
 	if (!file.is_open())
 	{
-		std::cerr << OPEN_FAIL << std::endl;
+		std::cerr << INPUT_FILE_OPEN_FAIL << std::endl;
 		return EXIT_FAILURE;
 	}
 	return 0;

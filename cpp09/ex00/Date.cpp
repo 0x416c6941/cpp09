@@ -12,7 +12,7 @@ Date::Date(const std::string & date)
 	// Year must be at least 2 AD, since Howard Hinnant's formula
 	// works only after March, 1 AD.
 	const long MIN_YEAR = 2;
-	const std::string EXCEPTION_MSG = std::string("Date::Date(const std::string &): ")
+	const std::string EXCEPTION_MSG = std::string("Date::Date(): ")
 			+ "Date string is invalid.";
 
 	errno = 0;

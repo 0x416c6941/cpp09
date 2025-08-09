@@ -8,8 +8,9 @@ CXXFLAGS = -I$(INC_DIR) -std=c++98					\
 INC_DIR = .
 
 # Source files.
-SRC_FILES = main.cpp	\
-	    Date.cpp
+SRC_FILES = main.cpp			\
+	    Date.cpp			\
+	    BTCExchangeHistory.cpp
 
 # Object files.
 OBJ_FILES = $(patsubst %.cpp,%.o,$(SRC_FILES))
