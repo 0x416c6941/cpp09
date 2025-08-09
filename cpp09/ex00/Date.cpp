@@ -2,7 +2,8 @@
 #include <string>
 #include <cerrno>
 #include <cstdlib>
-#include <limits>
+#include <ostream>
+#include <iomanip>
 
 Date::Date(const std::string & date)
 {
@@ -183,4 +184,14 @@ long operator - (const Date & lhs, const Date & rhs)
 {
 	return lhs.get_reference_point_for_date_comparison()
 		- rhs.get_reference_point_for_date_comparison();
+}
+
+std::ostream & operator << (std::ostream & os, const Date & obj)
+{
+	const int WIDTH = 2;
+
+	os << obj.get_year()
+		<< '-' << std::setw(WIDTH) << std::setfill('0') << obj.get_month()
+		<< '-' << std::setw(WIDTH) << std::setfill('0') << obj.get_day();
+	return os;
 }

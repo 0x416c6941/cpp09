@@ -149,7 +149,7 @@ class BTCExchangeHistory
 		 * @return	BTC exchange rate for \p date
 		 * 		or for the closest date, if \p is not found.
 		 */
-		double get_btc_exchange_rate(const Date & date);
+		double get_btc_exchange_rate(const Date & date) const;
 };
 
 #endif	// BTCEXCHANGEHISTORY_HPP

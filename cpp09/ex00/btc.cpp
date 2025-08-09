@@ -26,6 +26,7 @@ int convert(const BTCExchangeHistory & exchange_history, std::ifstream & file)
 	const std::string NEGATIVE_NUM_MSG = "Error: not a positive number.";
 	const std::string BAD_INPUT_MSG = "Error: bad input => ";
 	const std::string TOO_LARGE_NUM_MSG = "Error: too large a number.";
+	const std::string NO_LOWER_DATE_MSG = "Error: No closest lower date is available.";
 
 	std::getline(file, line);
 	if (file.eof())
@@ -101,7 +102,22 @@ int convert(const BTCExchangeHistory & exchange_history, std::ifstream & file)
 			delete date;
 			continue;
 		}
-		(void) exchange_history;
+		try
+		{
+			// With the given example in subject,
+			// we don't need to handle precision or whatever else.
+			std::cout << *date
+					<< " => " << val
+					<< " = " << val * exchange_history.
+						get_btc_exchange_rate(*date)
+					<< std::endl;
+		}
+		catch (const BTCExchangeHistory::NoAvailableLowerDate & e)
+		{
+			std::cerr << NO_LOWER_DATE_MSG << std::endl;
+			delete date;
+			continue;
+		}
 		delete date;
 	}
 	return 0;

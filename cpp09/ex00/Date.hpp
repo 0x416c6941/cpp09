@@ -3,6 +3,7 @@
 
 #include <string>
 #include <stdexcept>
+#include <ostream>
 
 /**
  * A class to parse the date stored as string in "YYYY-MM-DD" format.
@@ -88,5 +89,7 @@ class Date
  * @return	Difference in days between \p lhs and \p rhs.
  */
 long operator - (const Date & lhs, const Date & rhs);
+
+std::ostream & operator << (std::ostream & os, const Date & obj);
 
 #endif	// DATE_HPP

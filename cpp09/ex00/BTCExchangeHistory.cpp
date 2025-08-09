@@ -343,7 +343,7 @@ void BTCExchangeHistory::read_history(std::ifstream & file)
 	}
 }
 
-double BTCExchangeHistory::get_btc_exchange_rate(const Date & date)
+double BTCExchangeHistory::get_btc_exchange_rate(const Date & date) const
 {
 	std::map<Date, double>::const_iterator it;
 	const std::string MSG_PREFIX = "BTCExchangeHistory::get_btc_exchange_rate(): ";
