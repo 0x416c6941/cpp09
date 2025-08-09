@@ -4,7 +4,11 @@
 #include <cstdlib>
 #include "BTCExchangeHistory.hpp"
 #include <stdexcept>
+#include "btc.hpp"
 
+// Ideally, to prevent collision with already existing projects,
+// we should've been defined a namespace for our functions and classes.
+// Still, at this point everything works and I don't really care so much.
 int main(int argc, char * argv[])
 {
 	const int EXPECTED_ARGS = 2;
@@ -48,5 +52,13 @@ int main(int argc, char * argv[])
 		std::cerr << INPUT_FILE_OPEN_FAIL << std::endl;
 		return EXIT_FAILURE;
 	}
-	return 0;
+	try
+	{
+		return convert(btc_exchange_history, file);
+	}
+	catch (const std::bad_alloc & e)
+	{
+		std::cerr << "Error: OOM." << std::endl;
+		return EXIT_FAILURE;
+	}
 }

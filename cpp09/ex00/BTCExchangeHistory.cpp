@@ -274,6 +274,8 @@ void BTCExchangeHistory::read_history(std::ifstream & file)
 	const std::string MSG_PREFIX = "BTCExchangeHistory::read_history(): ";
 	const std::string FILE_CORRUPTION_MSG = "File is corrupted.";
 
+	// Any empty lines should be considered invalid,
+	// since we're working w/ a "database" here.
 	while (std::getline(file, line))
 	{
 		if (file.eof())
