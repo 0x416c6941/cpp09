@@ -16,6 +16,20 @@ class RPN
 		RPN();
 		RPN(const RPN & src);
 
+		/**
+		 * Calculate \p op with top 2 elements from \p numbers,
+		 * where the penultimate top element is the first number,
+		 * and push the result to the top of \p numbers,
+		 * while popping previous 2 elements of the calculation.
+		 * @throw	InvalidExpression	\p op is invalid
+		 * 					or \p numbers
+		 * 					don't contain
+		 * 					at least 2 elements.
+		 * @param	numbers	Numbers of postfix notation.
+		 * @param	op	Operation to calculate.
+		 */
+		static void calculate_op(std::stack<int> & numbers, char op);
+
 	public:
 		// It doesn't matter if we have `operator = ()`
 		// overloaded here, since both default and copy constructors
@@ -52,7 +66,7 @@ class RPN
 		 * @param	expression	Expression to evaluate.
 		 * @return	Result of expression evaluation.
 		 */
-		static double evaluate(const std::string & expression);
+		static int evaluate(const char * expression);
 };
 
 #endif	// RPN_HPP

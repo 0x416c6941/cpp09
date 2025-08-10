@@ -16,8 +16,7 @@ int main(int argc, char * argv[])
 	}
 	try
 	{
-		std::cout << RPN::evaluate(std::string(argv[EXPRESSION]))
-				<< std::endl;
+		std::cout << RPN::evaluate(argv[EXPRESSION]) << std::endl;
 	}
 	catch (const RPN::InvalidExpression & e)
 	{
