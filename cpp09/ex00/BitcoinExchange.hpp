@@ -1,20 +1,21 @@
-#ifndef BTCEXCHANGEHISTORY_HPP
-#define BTCEXCHANGEHISTORY_HPP
+#ifndef BITCOINEXCHANGE_HPP
+#define BITCOINEXCHANGE_HPP
 
 #include <map>
-#include "Date.hpp"
-#include <stdexcept>
 #include <string>
+#include <cstddef>
 #include <fstream>
+#include <stdexcept>
 
 /**
- * A class to parse and store BTC exchange rate across multiple years.
- * @class	BTCExchangeHistory
+ * A class to parse and store BTC exchange rate across multiple years
+ * and exchange some given BTC amount on a given date.
+ * @class	BitcoinExchange
  */
-class BTCExchangeHistory
+class BitcoinExchange
 {
 	private:
-		std::map<Date, double> history;
+		std::map<std::string, double> history;
 
 		// For internal use in `read_history()`.
 		// It's not stated in subject that first column
@@ -33,7 +34,8 @@ class BTCExchangeHistory
 		 * @param	line		Line from file with
 		 * 				BTC exchange rate history.
 		 * @param	first_column	Where to store info about
-		 * 				which column in the DB is first.
+		 * 				which column in the DB
+		 * 				is first.
 		 */
 		void handle_first_line(const std::string & line,
 				enum e_first_db_column & first_column);
@@ -51,14 +53,14 @@ class BTCExchangeHistory
 				const enum e_first_db_column & first_column);
 
 	public:
-		BTCExchangeHistory();
-		BTCExchangeHistory(const BTCExchangeHistory & src);
-		BTCExchangeHistory & operator = (const BTCExchangeHistory & src);
-		virtual ~BTCExchangeHistory();
+		BitcoinExchange();
+		BitcoinExchange(const BitcoinExchange & src);
+		BitcoinExchange & operator = (const BitcoinExchange & src);
+		virtual ~BitcoinExchange();
 
 		/**
 		 * An exception that's thrown when
-		 * `BTCExchangeHistory::read_history(std::ifstream &)`
+		 * `BitcoinExchange::read_history(std::ifstream &)`
 		 * encounters some history file corruption.
 		 * @class	HistoryFileIsCorrupted
 		 */
@@ -80,29 +82,29 @@ class BTCExchangeHistory
 
 		/**
 		 * An exception that's thrown when
-		 * `BTCExchangeHistory::get_btc_exchange_rate(const Date &)`
-		 * is called, yet history wasn't loaded yet.
-		 * @class	HistoryIsEmpty
+		 * `BitcoinExchange::get_date(std::string &)`
+		 * encounters invalid argument (date).
+		 * @class	InvalidDate
 		 */
-		class HistoryIsEmpty: public std::exception
+		class InvalidDate: public std::exception
 		{
 			private:
 				std::string msg;
 
 			public:
-				HistoryIsEmpty(const char * msg);
-				HistoryIsEmpty(const std::string & msg);
-				HistoryIsEmpty(const HistoryIsEmpty & src);
-				HistoryIsEmpty & operator = (
-						const HistoryIsEmpty & src);
-				virtual ~HistoryIsEmpty() throw();
+				InvalidDate(const char * msg);
+				InvalidDate(const std::string & msg);
+				InvalidDate(const InvalidDate & src);
+				InvalidDate & operator = (
+						const InvalidDate & src);
+				virtual ~InvalidDate() throw();
 
 				virtual const char * what() const throw();
 		};
 
 		/**
 		 * An exception that's thrown when
-		 * `BTCExchangeHistory::get_btc_exchange_rate(const Date &)`
+		 * `BitcoinExchange::get_btc_exchange_rate(const std::string &)`
 		 * is called, yet there's no available lower date in `history`
 		 * ("Be careful to use the lower date and not the upper one").
 		 * @class	NoAvailableLowerDate
@@ -124,6 +126,22 @@ class BTCExchangeHistory
 		};
 
 		/**
+		 * Get the substring with date in format "YYYY-MM-DD"
+		 * stored in \p line at the beginning.
+		 * @throw	InvalidDate	Date in \p line is invalid.
+		 * @param	line			Line with some data,
+		 * 					with date at the beginning
+		 * 					in format "YYYY-MM-DD".
+		 * @param	processed_bytes_in_line	Out parameter:
+		 * 					amount of bytes
+		 * 					processed in \p line.
+		 * @return	Substring from \p line with date
+		 * 		in format "YYYY-MM-DD".
+		 */
+		std::string get_date_substr(const std::string & line,
+				size_t & processed_bytes_in_line) const;
+
+		/**
 		 * Read history of BTC exchange rate from \p file.
 		 * @warning	If history was already read,
 		 * 		calling this method would
@@ -138,18 +156,21 @@ class BTCExchangeHistory
 
 		/**
 		 * Get the BTC exchange rate on \p date.
-		 * If no such \p date is found, the closest one is found.
-		 * If there are two closest (lower and upper) dates,
-		 * the lower one will be chosen.
-		 * @throw	HistoryIsEmpty		`history` is empty.
+		 * If no such \p date is found,
+		 * the lower closest one is returned.
 		 * @throw	NoAvailableLowerDate	Only upper closest date
-		 * 					to \p date was found.
-		 * @param	date	Date, on which to find
-		 * 			the BTC exchange rate.
+		 * 					to \p date was found
+		 * 					or no closest date
+		 * 					at all was found
+		 * 					(in which case
+		 * 					`history` is empty).
+		 * @param	date	Date in format "YYYY-MM-DD",
+		 * 			on which to find the BTC exchange rate.
 		 * @return	BTC exchange rate for \p date
-		 * 		or for the closest date, if \p is not found.
+		 * 		or for the lower closest date,
+		 * 		if \p is not found in `history`.
 		 */
-		double get_btc_exchange_rate(const Date & date) const;
+		double get_btc_exchange_rate(const std::string & date) const;
 };
 
-#endif	// BTCEXCHANGEHISTORY_HPP
+#endif	// BITCOINEXCHANGE_HPP
