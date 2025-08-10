@@ -64,7 +64,7 @@ BitcoinExchange::HistoryFileIsCorrupted::~HistoryFileIsCorrupted() throw()
 
 const char * BitcoinExchange::HistoryFileIsCorrupted::what() const throw()
 {
-	return msg.c_str();
+	return this->msg.c_str();
 }
 
 BitcoinExchange::InvalidDate::InvalidDate(const char * msg)
@@ -100,7 +100,7 @@ BitcoinExchange::InvalidDate::~InvalidDate() throw()
 
 const char * BitcoinExchange::InvalidDate::what() const throw()
 {
-	return msg.c_str();
+	return this->msg.c_str();
 }
 
 BitcoinExchange::NoAvailableLowerDate::NoAvailableLowerDate(const char * msg)
@@ -136,7 +136,7 @@ BitcoinExchange::NoAvailableLowerDate::~NoAvailableLowerDate() throw()
 
 const char * BitcoinExchange::NoAvailableLowerDate::what() const throw()
 {
-	return msg.c_str();
+	return this->msg.c_str();
 }
 
 void BitcoinExchange::handle_first_line(const std::string & line,
