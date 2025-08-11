@@ -115,6 +115,7 @@ int main(int argc, char * argv[])
 	std::list<int> input, test;
 	const std::string	ERROR_MSG = "Error",
 				OOM_MSG = "OOM";
+	PmergeMe::PmergeMe solver;
 	struct PmergeMe::PmergeMe::timediff time_taken;
 
 	if (argc <= 1)
@@ -137,7 +138,7 @@ int main(int argc, char * argv[])
 		std::cerr << OOM_MSG << std::endl;
 		return EXIT_FAILURE;
 	}
-	time_taken = PmergeMe::PmergeMe::sort(input, test);
+	time_taken = solver.sort(input, test);
 	(void) time_taken;
 	return 0;
 }

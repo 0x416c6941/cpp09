@@ -3,10 +3,10 @@
 
 #include <cstddef>
 #include <iterator>
+#include <algorithm>
 #include <stdexcept>
 #include <string>
 #include <ctime>
-#include <cstdlib>
 
 namespace PmergeMe
 {
@@ -17,13 +17,54 @@ namespace PmergeMe
 	class PmergeMe
 	{
 		private:
-			PmergeMe();
+			// It doesn't make sense for `PmergeMe`
+			// neither to be CopyConstructible,
+			// nor to have `operator = ()` overloaded.
 			PmergeMe(const PmergeMe & src);
+			PmergeMe & operator = (const PmergeMe & src);
+
+			// Count of element's comparisons.
+			size_t comp_cnt;
 
 			/**
-			 * Split \p IN to pairs and sort each pair.
+			 * Compare function to sort containers of type \t T
+			 * by second element stored in them.
+			 * @warning	Type stored in \t T
+			 * 		must have `operator < ()`
+			 * 		overloaded for it.
+			 * @tparam	T	A container type
+			 * 			that provides `size()` method,
+			 * 			`const_iterator` to
+			 * 			iterate through it,
+			 * 			and `begin()` method
+			 * 			to obtain such iterator.
+			 * @class	CompareBySecond
+			 */
+			template <typename T>
+			struct CompareBySecond
+			{
+				bool operator () (const T & lhs, const T & rhs) const
+				{
+					typename T::const_iterator lhs_second;
+					typename T::const_iterator rhs_second;
+
+					if (lhs.size() < 2 || rhs.size() < 2)
+					{
+						return false;
+					}
+					lhs_second = lhs.begin();
+					std::advance(lhs_second, 1);
+					rhs_second = rhs.begin();
+					std::advance(rhs_second, 1);
+					return (*lhs_second < *rhs_second);
+				}
+			};
+
+			/**
+			 * Split \p IN to pairs and sort content of each pair.
 			 * If element count in \p IN is odd,
 			 * last element will remain untouched.
+			 * @brief	"Merge" phase of Ford-Johnson algorithm.
 			 * @warning	Type stored in \t T
 			 * 		must have `operator < ()`
 			 * 		overloaded for it
@@ -40,10 +81,14 @@ namespace PmergeMe
 			 * 			methods to obtain
 			 * 			such iterators.
 			 * @param	IN	Container to split
-			 * 			into sorted pairs.
+			 * 			into pairs with sorted content.
+			 * @return	Dynamic array of containers
+			 * 		of type \t T, each containing
+			 * 		a pair of sorted content from \p IN.
+			 * 		Size of this array is `IN.size() / 2`.
 			 */
 			template <typename T>
-			static T * get_sorted_pairs(const T & IN)
+			T * get_pairs_with_sorted_content(const T & IN)
 			{
 				// `IN.size() / 2` because
 				// there will be `IN.size() / 2` pairs.
@@ -70,12 +115,13 @@ namespace PmergeMe
 						ret[i].push_back(*next_it);
 						ret[i].push_back(*it);
 					}
+					this->comp_cnt++;
 				}
 				return ret;
 			}
 
 		public:
-			PmergeMe & operator = (const PmergeMe & src);
+			PmergeMe();
 			virtual ~PmergeMe();
 
 			/**
@@ -139,7 +185,7 @@ namespace PmergeMe
 			 * 		end time and start time.
 			 */
 			template <typename T>
-			static struct timediff sort(const T & IN, T & out)
+			struct timediff sort(const T & IN, T & out)
 			{
 				// `IN.size() / 2` because
 				// there will be `IN.size() / 2` pairs.
@@ -150,13 +196,16 @@ namespace PmergeMe
 				T * pairs;
 				struct timediff ret;
 
+				// "Forbidden functions: none",
+				// therefore a system call to get precise time
+				// in nanoseconds must be allowed.
 				if (clock_gettime(CLOCK_MONOTONIC, &begin_tm)
 					== -1)
 				{
 					throw GetTimeFail(MSG_PREFIX
 							+ GET_TIME_FAIL_MSG);
 				}
-				pairs = PmergeMe::get_sorted_pairs(IN);
+				pairs = this->get_pairs_with_sorted_content(IN);
 				delete [] pairs;
 				if (clock_gettime(CLOCK_MONOTONIC, &end_tm)
 					== -1)

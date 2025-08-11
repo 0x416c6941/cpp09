@@ -1,16 +1,16 @@
 #include "PmergeMe.hpp"
 #include <string>
 
-/*
 PmergeMe::PmergeMe::PmergeMe()
+	: comp_cnt(0)
 {
 }
 
+/*
 PmergeMe::PmergeMe::PmergeMe(const PmergeMe & src)
+	: compt_cnt(src.comp_cnt)
 {
-	(void) src;
 }
- */
 
 PmergeMe::PmergeMe & PmergeMe::PmergeMe::operator = (const PmergeMe & src)
 {
@@ -18,8 +18,10 @@ PmergeMe::PmergeMe & PmergeMe::PmergeMe::operator = (const PmergeMe & src)
 	{
 		return *this;
 	}
+	this->comp_cnt = src.comp_cnt;
 	return *this;
 }
+ */
 
 PmergeMe::PmergeMe::~PmergeMe()
 {
