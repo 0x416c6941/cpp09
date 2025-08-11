@@ -56,7 +56,7 @@ namespace PmergeMe
 			errno = 0;
 			to_push_back = strtol(arg, &arg, STRTOL_BASE);
 			if (!(*arg == '\0' || *arg == ' ') || errno == ERANGE
-				|| to_push_back < 0
+				|| to_push_back <= 0
 				|| to_push_back > std::numeric_limits<int>::max())
 			{
 				throw std::invalid_argument(MSG_PREFIX
@@ -135,4 +135,5 @@ int main(int argc, char * argv[])
 		std::cerr << OOM_MSG << std::endl;
 		return EXIT_FAILURE;
 	}
+	return 0;
 }
