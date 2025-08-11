@@ -5,6 +5,7 @@
 #include <cerrno>
 #include <cstdlib>
 #include <iomanip>
+#include <iterator>
 
 BitcoinExchange::BitcoinExchange()
 {
@@ -412,7 +413,8 @@ double BitcoinExchange::get_btc_exchange_rate(const std::string & date) const
 					+ "History is empty.");
 		}
 		it = this->history.end();
-		return (--it)->second;
+		std::advance(it, -1);
+		return it->second;
 	}
 	else if (date < it->first)
 	{
@@ -429,7 +431,8 @@ double BitcoinExchange::get_btc_exchange_rate(const std::string & date) const
 			throw NoAvailableLowerDate(MSG_PREFIX
 					+ "No lower date is available in history.");
 		}
-		return (--it)->second;
+		std::advance(it, -1);
+		return it->second;
 	}
 	return it->second;
 }
