@@ -165,6 +165,10 @@ namespace PmergeMe
 			 * 		must have `operator < ()`
 			 * 		overloaded for it
 			 * 		and be @c CopyConstructible.
+			 * 		if type stored in \t T is one with
+			 * 		floating-point, it's up to you
+			 * 		to ensure `operator == ()`
+			 * 		is precise enough.
 			 * @warning	If \p out isn't empty,
 			 * 		it will be cleared.
 			 * @throw	std::bad_alloc	Some allocation failed.
@@ -193,9 +197,9 @@ namespace PmergeMe
 				const std::string MSG_PREFIX = "PmergeMe::sort(): ";
 				const std::string GET_TIME_FAIL_MSG = "clock_gettime() failed.";
 				struct timespec begin_tm, end_tm;
-				T * pairs;
 				struct timediff ret;
 
+				this->comp_cnt = 0;
 				// "Forbidden functions: none",
 				// therefore a system call to get precise time
 				// in nanoseconds must be allowed.
@@ -205,8 +209,9 @@ namespace PmergeMe
 					throw GetTimeFail(MSG_PREFIX
 							+ GET_TIME_FAIL_MSG);
 				}
-				pairs = this->get_pairs_with_sorted_content(IN);
-				delete [] pairs;
+				// TODO.
+				(void) IN;
+				(void) out;
 				if (clock_gettime(CLOCK_MONOTONIC, &end_tm)
 					== -1)
 				{
@@ -215,9 +220,14 @@ namespace PmergeMe
 				}
 				ret.tv_sec = end_tm.tv_sec - begin_tm.tv_sec;
 				ret.tv_nsec = end_tm.tv_nsec - begin_tm.tv_nsec;
-				(void) out;
 				return ret;
 			}
+
+			/**
+			 * Getter for `comp_cnt`.
+			 * @return	`comp_cnt`.
+			 */
+			size_t get_comparison_count() const;
 	};
 }
 
