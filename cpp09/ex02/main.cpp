@@ -10,7 +10,7 @@
 /**
  * Namespace dedicated specifically to PmergeMe
  * to potentially avoid collision w/ names of other functions and classes.
- * @class	PmergeMe
+ * @namespace	PmergeMe
  */
 namespace PmergeMe
 {
