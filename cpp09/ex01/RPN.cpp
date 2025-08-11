@@ -5,6 +5,17 @@
 #include <cstdlib>
 #include <limits>
 
+/*
+RPN::RPN()
+{
+}
+
+RPN::RPN(const RPN & src)
+{
+	(void) src;
+}
+ */
+
 RPN & RPN::operator = (const RPN & src)
 {
 	if (this == &src)
