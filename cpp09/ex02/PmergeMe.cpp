@@ -28,6 +28,42 @@ PmergeMe::PmergeMe::~PmergeMe()
 {
 }
 
+PmergeMe::PmergeMe::InvalidPairSize::InvalidPairSize(const char * msg)
+	: msg(msg)
+{
+}
+
+PmergeMe::PmergeMe::InvalidPairSize::InvalidPairSize(const std::string & msg)
+	: msg(msg)
+{
+}
+
+PmergeMe::PmergeMe::InvalidPairSize::InvalidPairSize(
+		const PmergeMe::PmergeMe::InvalidPairSize & src)
+	: msg(src.msg)
+{
+}
+
+PmergeMe::PmergeMe::InvalidPairSize & PmergeMe::PmergeMe::InvalidPairSize:: operator = (
+		const PmergeMe::PmergeMe::InvalidPairSize & src)
+{
+	if (this == &src)
+	{
+		return *this;
+	}
+	this->msg = src.msg;
+	return *this;
+}
+
+PmergeMe::PmergeMe::InvalidPairSize::~InvalidPairSize() throw()
+{
+}
+
+const char * PmergeMe::PmergeMe::InvalidPairSize::what() const throw()
+{
+	return this->msg.c_str();
+}
+
 PmergeMe::PmergeMe::GetTimeFail::GetTimeFail(const char * msg)
 	: msg(msg)
 {
