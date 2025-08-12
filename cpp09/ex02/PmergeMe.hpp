@@ -54,15 +54,16 @@ namespace PmergeMe
 			 * Split \p IN to pairs.
 			 * If element count in \p IN is odd,
 			 * last element will remain untouched.
-			 * @warning	Type stored in \t T
-			 * 		must be @c CopyConstructible.
+			 * @warning	Type stored in \t T must be `int`,
+			 * 		otherwise the correct behavior
+			 * 		of this method is not guaranteed.
 			 * @warning	It's up to you to ensure
 			 * 		there are at least two elements
 			 * 		in \p IN.
 			 * @throw	std::bad_alloc	Some allocation failed.
 			 * @tparam	T	A container type that
 			 * 			saves the order
-			 * 			of inserted elements,
+			 * 			of inserted integers,
 			 * 			provides `push_back()`,
 			 * 			and `size()` methods,
 			 * 			`const_iterator` to
@@ -105,17 +106,16 @@ namespace PmergeMe
 			 * Split \p IN to pairs and sort content of each pair.
 			 * If element count in \p IN is odd,
 			 * last element will remain untouched.
-			 * @warning	Type stored in \t T
-			 * 		must have `operator < ()`
-			 * 		overloaded for it
-			 * 		and be @c CopyConstructible.
+			 * @warning	Type stored in \t T must be `int`,
+			 * 		otherwise the correct behavior
+			 * 		of this method is not guaranteed.
 			 * @warning	It's up to you to ensure
 			 * 		there are at least two elements
 			 * 		in \p IN.
 			 * @throw	std::bad_alloc	Some allocation failed.
 			 * @tparam	T	A container type that
 			 * 			saves the order
-			 * 			of inserted elements,
+			 * 			of inserted integers,
 			 * 			provides `push_back()`,
 			 * 			and `size()` methods,
 			 * 			`const_iterator`,
@@ -162,16 +162,12 @@ namespace PmergeMe
 			 * Check if pairs
 			 * returned by `get_pairs_with_sorted_content()`
 			 * are sorted by second element in each pair.
-			 * @warning	Type stored in \t T
-			 * 		must have `operator < ()`
-			 * 		overloaded for it.
-			 * 		If type stored in \t T is one with
-			 * 		floating-point, it's up to you
-			 * 		to ensure `operator == ()`
-			 * 		is precise enough.
+			 * @warning	Type stored in \t T must be `int`,
+			 * 		otherwise the correct behavior
+			 * 		of this method is not guaranteed.
 			 * @tparam	T	A container type that
 			 * 			saves the order
-			 * 			of inserted elements,
+			 * 			of inserted integers,
 			 * 			provides `size()` method,
 			 * 			`const_iterator` to
 			 * 			iterate through it,
@@ -225,14 +221,17 @@ namespace PmergeMe
 			 * Populate main chain with:
 			 * lesser element from first pair,
 			 * larger elements from all pairs.
+			 * @warning	Type stored in \t T must be `int`,
+			 * 		otherwise the correct behavior
+			 * 		of this method is not guaranteed.
 			 * @warning	It's up to you to ensure
 			 * 		each container
 			 * 		in \p pairs_with_sorted_content
-			 * 		is actually a pair.
+			 * 		actually contains a pair.
 			 * @throw	std::bad_alloc	Some allocation failed.
 			 * @tparam	T	A container type that
 			 * 			saves the order
-			 * 			of inserted elements,
+			 * 			of inserted integers,
 			 * 			provides `push_back()`,
 			 * 			`const_iterator` to
 			 * 			iterate through it,
@@ -273,75 +272,30 @@ namespace PmergeMe
 			}
 
 			/**
-			 * Populate pend with lesser elements
-			 * from second and later pairs.
-			 * @warning	It's up to you to ensure
-			 * 		each container
-			 * 		in \p pairs_with_sorted_content
-			 * 		is actually a pair.
-			 * @throw	std::bad_alloc	Some allocation failed.
-			 * @tparam	T	A container type that
-			 * 			saves the order
-			 * 			of inserted elements,
-			 * 			provides `push_back()`,
-			 * 			`const_iterator` to
-			 * 			iterate through it,
-			 * 			and `begin()` method
-			 * 			to obtain
-			 * 			such iterator.
-			 * @param	pairs		Pointer to containers
-			 * 				of type \t T,
-			 * 				each containing
-			 * 				a sorted pair of elements.
-			 * @param	PAIRS_CNT	Size of \p pairs.
-			 * @return	Main chain suitable
-			 * 		for "insertion" phase.
-			 */
-			template <typename T>
-			T populate_pend(const T * pairs_with_sorted_content,
-					const size_t PAIRS_CNT)
-			{
-				T ret;
-
-				// Edge case, should never happen.
-				if (PAIRS_CNT == 0)
-				{
-					return ret;
-				}
-				// Lesser elements from second and later pairs.
-				for (size_t i = 1; i < PAIRS_CNT; i++)
-				{
-					typename T::const_iterator it_a;
-
-					it_a = pairs_with_sorted_content[i].begin();
-					ret.push_back(*it_a);
-				}
-				return ret;
-			}
-
-			/**
 			 * Generate insertion sequence of indices
-			 * of elements from pend to main chain
-			 * by using Jacobsthal numbers.
+			 * of elements from pend with size of \p PEND_SIZE
+			 * to main chain by using Jacobsthal numbers.
+			 * @warning	Type stored in \t T must be `int`,
+			 * 		otherwise the correct behavior
+			 * 		of this method is not guaranteed.
 			 * @throw	std::bad_alloc	Some allocation failed.
 			 * @tparam	T	A container type that
 			 * 			saves the order
-			 * 			of inserted elements,
+			 * 			of inserted integers,
 			 * 			provides `push_back()`,
 			 * 			`const_iterator` to
 			 * 			iterate through it,
 			 * 			and `begin()`, and `end()`
 			 * 			methods to obtain
 			 * 			such iterators.
-			 * @param	PEND	Initialized and
-			 * 			not touched yet pend.
+			 * @param	PEND_SIZE	Size of pend.
 			 * @return	\t T with the insertion sequence
 			 * 		of indices of elements
 			 * 		from pend to main chain.
 			 */
 			template <typename T>
 			T jacobsthal_generate_pend_indices_sequence(
-					const T & PEND)
+					const size_t PEND_SIZE)
 			{
 				// No point of making `jacobsthal_numbers`
 				// static here.
@@ -356,7 +310,7 @@ namespace PmergeMe
 				// insertion sequence.
 				begin_jacobsthal_i = 2;
 				end_jacobsthal_i = begin_jacobsthal_i - 1;
-				while (ret.size() < PEND.size())
+				while (ret.size() < PEND_SIZE)
 				{
 					// "Upper" and "lower"
 					// iterator, respectively.
@@ -396,8 +350,8 @@ namespace PmergeMe
 					std::advance(u_it, begin_jacobsthal_i++);
 					l_it = jacobsthal_numbers.begin();
 					std::advance(l_it, end_jacobsthal_i++);
-					upper = static_cast<int> (*u_it - 1);
-					lower = static_cast<int> (*l_it);
+					upper = *u_it - 1;
+					lower = *l_it;
 					do
 					{
 						ret.push_back(upper--);
@@ -407,24 +361,63 @@ namespace PmergeMe
 			}
 
 			/**
-			 * Basically the core of the class:
-			 * a method to sort \p IN with Merge-insertion.
-			 * @warning	Type stored in \t T
-			 * 		must have `operator < ()`
-			 * 		overloaded for it
-			 * 		and be @c CopyConstructible.
-			 * 		If type stored in \t T is one with
-			 * 		floating-point, it's up to you
-			 * 		to ensure `operator == ()`
-			 * 		is precise enough.
-			 * @warning	\t T must have `operator == ()`
-			 * 		overloaded for it.
+			 * Binary insert \p what into \p main_chain
+			 * before \p before stored in in \p main_chain.
+			 * @warning	Type stored in \t T must be `int`,
+			 * 		otherwise the correct behavior
+			 * 		of this method is not guaranteed.
+			 * @warning	\p before must be stored
+			 * 		in \p main_chain,
+			 * 		otherwise the correct behavior
+			 * 		of this method is not guaranteed.
 			 * @throw	std::bad_alloc	Some allocation failed.
 			 * @tparam	T	A container type that
 			 * 			saves the order
-			 * 			of inserted elements,
-			 * 			provides `push_back()`,
-			 * 			`erase()`, and `size()` methods,
+			 * 			of inserted integers,
+			 * 			provides `insert()` method,
+			 * 			and `iterator` to
+			 * 			iterate through it,
+			 * 			and `begin()`, and `end()`
+			 * 			methods to obtain
+			 * 			such iterator.
+			 * @param	main_chain	Container of type \t T,
+			 * 				where to insert \p what
+			 * 				and which already stores
+			 * 				\p before in itself.
+			 * @param	what		What to insert
+			 * 				into \p main_chain.
+			 * @param	before		`last` for
+			 * 				`std::lower_bound()`.
+			 */
+			template <typename T>
+			void insert_into_main_chain(T & main_chain,
+					int what, int before)
+			{
+				typename T::iterator before_it;
+				typename T::iterator insert_pos_it;
+
+				before_it = std::lower_bound(main_chain.begin(),
+						main_chain.end(),
+						before);
+				insert_pos_it = std::lower_bound(
+						main_chain.begin(), before_it,
+						what);
+				main_chain.insert(insert_pos_it, what);
+			}
+
+			/**
+			 * Basically the core of the class:
+			 * a method to sort \p IN with merge-insertion.
+			 * @warning	Type stored in \t T must be `int`,
+			 * 		otherwise the correct behavior
+			 * 		of this method is not guaranteed.
+			 * @throw	std::bad_alloc	Some allocation failed.
+			 * @tparam	T	A container type that
+			 * 			saves the order
+			 * 			of inserted integers,
+			 * 			provides `insert()`,
+			 * 			`push_back()`, `erase()`,
+			 * 			and `size()` methods,
 			 * 			`const_iterator`,
 			 * 			and `iterator` to
 			 * 			iterate through it,
@@ -440,7 +433,12 @@ namespace PmergeMe
 				const std::string MSG_PREFIX = "PmergeMe::merge_insert(): ";
 				T * pairs_with_sorted_content;
 				size_t pairs_cnt;
-				T main_chain, pend, pend_insert_sequence;
+				// By "pend" we understand
+				// lesser elements from second pair
+				// of `pairs_with_sorted_content`
+				// (because lesser element from first pair
+				// will already be inserted into `main_chain`).
+				T main_chain, pend_insert_sequence;
 
 				pairs_cnt = IN.size() / 2;
 				// Edge case.
@@ -472,11 +470,25 @@ namespace PmergeMe
 					main_chain = this->populate_main_chain(
 							pairs_with_sorted_content,
 							pairs_cnt);
-					pend = this->populate_pend(
-							pairs_with_sorted_content,
-							pairs_cnt);
-					pend_insert_sequence = this->jacobsthal_generate_pend_indices_sequence(
-							pend);
+					pend_insert_sequence = this->jacobsthal_generate_pend_indices_sequence<T>(
+							pairs_cnt - 1);
+					for (size_t i = 0; i < pend_insert_sequence.size(); i++)
+					{
+						typename T::const_iterator sequence_i_it;
+						typename T::const_iterator it_a;
+						typename T::const_iterator it_b;
+
+						sequence_i_it = pend_insert_sequence.begin();
+						std::advance(sequence_i_it, i);
+						// "+ 1", because lesser element
+						// from first pair is already
+						// inserted into `main_chain`.
+						it_a = pairs_with_sorted_content[1 + *sequence_i_it].begin();
+						it_b = it_a;
+						std::advance(it_b, 1);
+						this->insert_into_main_chain(main_chain,
+								*it_a, *it_b);
+					}
 				}
 				catch (const std::bad_alloc & e)
 				{
@@ -528,25 +540,19 @@ namespace PmergeMe
 
 			/**
 			 * Sort \p IN while saving results in \p out.
-			 * @warning	Type stored in \t T
-			 * 		must have `operator < ()`
-			 * 		overloaded for it
-			 * 		and be @c CopyConstructible.
-			 * 		if type stored in \t T is one with
-			 * 		floating-point, it's up to you
-			 * 		to ensure `operator == ()`
-			 * 		is precise enough.
-			 * @warning	\t T must have `operator == ()`
-			 * 		overloaded for it.
+			 * @warning	Type stored in \t T must be `int`,
+			 * 		otherwise the correct behavior
+			 * 		of this method is not guaranteed.
 			 * @warning	If \p out isn't empty,
 			 * 		it will be cleared.
-			 * @throw	std::bad_alloc	Some allocation failed.
 			 * @throw	GetTimeFail	clock_gettime() failed.
+			 * @throw	std::bad_alloc	Some allocation failed.
 			 * @tparam	T	A container type that
 			 * 			saves the order
-			 * 			of inserted elements,
-			 * 			provides `push_back()`,
-			 * 			`erase()`, and `size()` methods,
+			 * 			of inserted integers,
+			 * 			provides `insert()`,
+			 * 			`push_back()`, `erase()`,
+			 * 			and `size()` methods,
 			 * 			`const_iterator`,
 			 * 			and `iterator` to
 			 * 			iterate through it,
