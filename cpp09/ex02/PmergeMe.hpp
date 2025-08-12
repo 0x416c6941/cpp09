@@ -325,6 +325,93 @@ namespace PmergeMe
 			}
 
 			/**
+			 * Generate insertion sequence of indices
+			 * of elements from pend to main chain
+			 * by using Jacobsthal numbers.
+			 * @throw	std::bad_alloc	Some allocation failed.
+			 * @tparam	T	A container type that
+			 * 			saves the order
+			 * 			of inserted elements,
+			 * 			provides `push_back()`,
+			 * 			`const_iterator` to
+			 * 			iterate through it,
+			 * 			and `begin()`, and `end()`
+			 * 			methods to obtain
+			 * 			such iterators.
+			 * @param	PEND	Initialized and
+			 * 			not touched yet pend.
+			 * @return	\t T with the insertion sequence
+			 * 		of indices of elements
+			 * 		from pend to main chain.
+			 */
+			template <typename T>
+			T jacobsthal_generate_pend_indices_sequence(
+					const T & PEND)
+			{
+				// No point of making `jacobsthal_numbers`
+				// static here.
+				T ret, jacobsthal_numbers;
+				size_t begin_jacobsthal_i, end_jacobsthal_i;
+
+				// First two Jacosthal numbers.
+				jacobsthal_numbers.push_back(0);
+				jacobsthal_numbers.push_back(1);
+				// Indices of first two Jacobsthal numbers
+				// that will be used to generate
+				// insertion sequence.
+				begin_jacobsthal_i = 2;
+				end_jacobsthal_i = begin_jacobsthal_i - 1;
+				while (ret.size() < PEND.size())
+				{
+					// "Upper" and "lower"
+					// iterator, respectively.
+					typename T::const_iterator u_it;
+					typename T::const_iterator l_it;
+					int upper, lower;
+
+					// Generating lacking numbers
+					// in `jacobsthal_numbers`.
+					while (!(begin_jacobsthal_i
+						< jacobsthal_numbers.size())
+						|| !(end_jacobsthal_i
+							< jacobsthal_numbers.size()))
+					{
+
+						// "Last" and "penultimate"
+						// iterator, respectively.
+						typename T::const_iterator l_it;
+						typename T::const_iterator p_it;
+
+						// We're always guaranteed
+						// to not access `jacobsthal_numbers`
+						// out of bounds,
+						// since we insert two numbers
+						// in the beginning.
+						l_it = jacobsthal_numbers.end();
+						std::advance(l_it, -1);
+						p_it = l_it;
+						std::advance(p_it, -1);
+						jacobsthal_numbers.push_back(*l_it
+								+ *p_it * 2);
+					}
+					// After generating lacking numbers,
+					// we're guaranteed not to access
+					// `jacobsthal_numbers` out of bounds.
+					u_it = jacobsthal_numbers.begin();
+					std::advance(u_it, begin_jacobsthal_i++);
+					l_it = jacobsthal_numbers.begin();
+					std::advance(l_it, end_jacobsthal_i++);
+					upper = static_cast<int> (*u_it - 1);
+					lower = static_cast<int> (*l_it);
+					do
+					{
+						ret.push_back(upper--);
+					} while (upper >= lower);
+				}
+				return ret;
+			}
+
+			/**
 			 * Basically the core of the class:
 			 * a method to sort \p IN with Merge-insertion.
 			 * @warning	Type stored in \t T
@@ -346,8 +433,8 @@ namespace PmergeMe
 			 * 			`const_iterator`,
 			 * 			and `iterator` to
 			 * 			iterate through it,
-			 * 			and `begin()` method
-			 * 			to obtain
+			 * 			and `begin()`, and `end()`
+			 * 			methods to obtain
 			 * 			such iterators.
 			 * @param	IN	Container to sort.
 			 * @return	\p IN sorted.
@@ -358,7 +445,7 @@ namespace PmergeMe
 				const std::string MSG_PREFIX = "PmergeMe::merge_insert(): ";
 				T * pairs_with_sorted_content;
 				size_t pairs_cnt;
-				T main_chain, pend;
+				T main_chain, pend, pend_insert_sequence;
 
 				pairs_cnt = IN.size() / 2;
 				// Edge case.
@@ -390,17 +477,11 @@ namespace PmergeMe
 					main_chain = this->populate_main_chain(
 							pairs_with_sorted_content,
 							pairs_cnt);
-				}
-				catch (const std::bad_alloc & e)
-				{
-					delete [] pairs_with_sorted_content;
-					throw std::bad_alloc();
-				}
-				try
-				{
 					pend = this->populate_pend(
 							pairs_with_sorted_content,
 							pairs_cnt);
+					pend_insert_sequence = this->jacobsthal_generate_pend_indices_sequence(
+							pend);
 				}
 				catch (const std::bad_alloc & e)
 				{
@@ -474,8 +555,8 @@ namespace PmergeMe
 			 * 			`const_iterator`,
 			 * 			and `iterator` to
 			 * 			iterate through it,
-			 * 			and `begin()` method
-			 * 			to obtain
+			 * 			and `begin()`, and `end()`
+			 * 			methods to obtain
 			 * 			such iterators.
 			 * @param	IN	Container to sort.
 			 * @param	out	Result of sorting \p in.
