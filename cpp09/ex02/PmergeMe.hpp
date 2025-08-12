@@ -67,9 +67,8 @@ namespace PmergeMe
 			 * 			and `size()` methods,
 			 * 			`const_iterator` to
 			 * 			iterate through it,
-			 * 			and `begin()`, and `end()`
-			 * 			methods to obtain
-			 * 			such iterators.
+			 * 			and `begin()` method
+			 * 			to obtain such iterator.
 			 * @param	IN	Container to split
 			 * 			into pairs with sorted content.
 			 * @return	Dynamic array of containers
@@ -105,7 +104,6 @@ namespace PmergeMe
 			 * Split \p IN to pairs and sort content of each pair.
 			 * If element count in \p IN is odd,
 			 * last element will remain untouched.
-			 * @brief	"Merge" phase of Ford-Johnson algorithm.
 			 * @warning	Type stored in \t T
 			 * 		must have `operator < ()`
 			 * 		overloaded for it
@@ -116,11 +114,11 @@ namespace PmergeMe
 			 * 			of inserted elements,
 			 * 			provides `push_back()`,
 			 * 			and `size()` methods,
-			 * 			`const_iterator` to
+			 * 			`const_iterator`,
+			 * 			and `iterator` to
 			 * 			iterate through it,
-			 * 			and `begin()`, and `end()`
-			 * 			methods to obtain
-			 * 			such iterators.
+			 * 			and `begin()` method
+			 * 			to obtain such iterators.
 			 * @param	IN	Container to split
 			 * 			into pairs with sorted content.
 			 * @return	Dynamic array of containers
@@ -161,12 +159,26 @@ namespace PmergeMe
 			 * Check if pairs
 			 * returned by `get_pairs_with_sorted_content()`
 			 * are sorted by second element in each pair.
-			 * @tparam	T	Iterator to container
-			 * 				storing a pair
-			 * 				of elements.
-			 * @param	begin	Beginning of container
-			 * 			with pairs.
-			 * @param	end	End of container with pairs.
+			 * @warning	Type stored in \t T
+			 * 		must have `operator < ()`
+			 * 		overloaded for it.
+			 * 		If type stored in \t T is one with
+			 * 		floating-point, it's up to you
+			 * 		to ensure `operator == ()`
+			 * 		is precise enough.
+			 * @tparam	T	A container type that
+			 * 			saves the order
+			 * 			of inserted elements,
+			 * 			provides `size()` method,
+			 * 			`const_iterator` to
+			 * 			iterate through it,
+			 * 			and `begin()` method
+			 * 			to obtain such iterator.
+			 * @param	pairs		Pointer to containers
+			 * 				of type \t T,
+			 * 				each containing
+			 * 				a pair of elements.
+			 * @param	PAIRS_CNT	Size of \p pairs.
 			 * @return	true, if yes.
 			 * @return	false, if no.
 			 */
@@ -208,13 +220,63 @@ namespace PmergeMe
 			}
 
 			/**
+			 * Populate main chain with:
+			 * lesser element from first pair,
+			 * larger elements from all pairs.
+			 * @warning	It's up to you to ensure
+			 * 		each container
+			 * 		in \p pairs_with_sorted_content
+			 * 		is actually a pair.
+			 * @throw	std::bad_alloc	Some allocation failed.
+			 * @tparam	T	A container type that
+			 * 			saves the order
+			 * 			of inserted elements,
+			 * 			provides `push_back()`,
+			 * 			`const_iterator` to
+			 * 			iterate through it,
+			 * 			and `begin()`, and `end()`
+			 * 			methods to obtain
+			 * 			such iterators.
+			 * @param	pairs		Pointer to containers
+			 * 				of type \t T,
+			 * 				each containing
+			 * 				a sorted pair of elements.
+			 * @param	PAIRS_CNT	Size of \p pairs.
+			 * @return	Main chain suitable
+			 * 		for "insertion" phase.
+			 */
+			template <typename T>
+			T populate_main_chain(const T * pairs_with_sorted_content,
+					const size_t PAIRS_CNT)
+			{
+				T ret;
+
+				if (PAIRS_CNT == 0)
+				{
+					return ret;
+				}
+				// Lesser element from first pair.
+				ret.push_back(*pairs_with_sorted_content[0].begin());
+				// Larger elements from all pairs.
+				for (size_t i = 0; i < PAIRS_CNT; i++)
+				{
+					typename T::const_iterator it_second_elem;
+
+					it_second_elem = pairs_with_sorted_content[i].begin();
+					std::advance(it_second_elem, 1);
+					ret.push_back(*it_second_elem);
+				}
+				return ret;
+			}
+
+			/**
 			 * Basically the core of the class:
-			 * a method to sort \p IN with Merge-Insertion.
+			 * a method to sort \p IN with Merge-insertion.
 			 * @warning	Type stored in \t T
 			 * 		must have `operator < ()`
 			 * 		overloaded for it
 			 * 		and be @c CopyConstructible.
-			 * 		if type stored in \t T is one with
+			 * 		If type stored in \t T is one with
 			 * 		floating-point, it's up to you
 			 * 		to ensure `operator == ()`
 			 * 		is precise enough.
@@ -226,34 +288,52 @@ namespace PmergeMe
 			 * 			of inserted elements,
 			 * 			provides `push_back()`,
 			 * 			`erase()`, and `size()` methods,
-			 * 			`const_iterator` to
+			 * 			`const_iterator`,
+			 * 			and `iterator` to
 			 * 			iterate through it,
-			 * 			and `begin()`, and `end()`
+			 * 			and `begin()` method
+			 * 			to obtain
+			 * 			such iterators.
 			 * @param	IN	Container to sort.
 			 * @return	\p IN sorted.
 			 */
 			template <typename T>
 			T merge_insert(const T & IN)
 			{
+				const std::string MSG_PREFIX = "PmergeMe::merge_insert(): ";
 				T * pairs_with_sorted_content;
 				size_t pairs_cnt;
-				T ret;
+				T main_chain, pend;
 
 				pairs_with_sorted_content = this->get_pairs_with_sorted_content(
 						IN);
 				pairs_cnt = IN.size() / 2;
-				if (!are_pairs_sorted_by_second_element(
+				// Edge case, although should never happen.
+				if (pairs_cnt == 0)
+				{
+					return IN;
+				}
+				else if (!are_pairs_sorted_by_second_element(
 						pairs_with_sorted_content,
 						pairs_cnt))
 				{
 					std::cout << "LOG: Pairs aren't sorted." << std::endl;
+					delete [] pairs_with_sorted_content;
+					return T();
 				}
-				else
+				try
 				{
-					std::cout << "LOG: Pairs are sorted." << std::endl;
+					main_chain = this->populate_main_chain(
+							pairs_with_sorted_content,
+							pairs_cnt);
+				}
+				catch (const std::bad_alloc & e)
+				{
+					delete [] pairs_with_sorted_content;
+					throw std::bad_alloc();
 				}
 				delete [] pairs_with_sorted_content;
-				return ret;
+				return main_chain;
 			}
 
 		public:
@@ -316,10 +396,11 @@ namespace PmergeMe
 			 * 			of inserted elements,
 			 * 			provides `push_back()`,
 			 * 			`erase()`, and `size()` methods,
-			 * 			`const_iterator` to
+			 * 			`const_iterator`,
+			 * 			and `iterator` to
 			 * 			iterate through it,
-			 * 			and `begin()`, and `end()`
-			 * 			methods to obtain
+			 * 			and `begin()` method
+			 * 			to obtain
 			 * 			such iterators.
 			 * @param	IN	Container to sort.
 			 * @param	out	Result of sorting \p in.
