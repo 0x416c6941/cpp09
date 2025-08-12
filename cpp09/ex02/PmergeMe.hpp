@@ -89,9 +89,10 @@ namespace PmergeMe
 
 				for (size_t i = 0; i < RET_SIZE; i++)
 				{
-					typename T::const_iterator it = IN.begin();
+					typename T::const_iterator it;
 					typename T::const_iterator next_it;
 
+					it = IN.begin();
 					// `i * 2` because
 					// pair consists of two elements.
 					std::advance(it, i * 2);
@@ -141,21 +142,21 @@ namespace PmergeMe
 
 				for (size_t i = 0; i < RET_SIZE; i++)
 				{
-					typename T::iterator it;
-					typename T::iterator next_it;
+					typename T::iterator it_a;
+					typename T::iterator it_b;
 
-					it = ret[i].begin();
-					next_it = it;
+					it_a = ret[i].begin();
+					it_b = it_a;
 					// `PmergeMe::get_pairs_with_unsorted_content()`
 					// will for sure return us a dynamic array
 					// of containers, each of size 2.
-					// Hence not checking if `next_it`
+					// Hence not checking if `b`
 					// is within the bounds of `ret[i]`.
-					std::advance(next_it, 1);
+					std::advance(it_b, 1);
 					this->comp_cnt++;
-					if (!(*it < *next_it))
+					if (!(*it_a < *it_b))
 					{
-						std::iter_swap(it, next_it);
+						std::iter_swap(it_a, it_b);
 					}
 				}
 				return ret;
@@ -202,8 +203,8 @@ namespace PmergeMe
 				// `PAIRS_CNT - 1` won't result in underflow.
 				for (size_t i = 0; i < PAIRS_CNT - 1; i++)
 				{
-					typename T::const_iterator it_second_elem;
-					typename T::const_iterator next_it_second_elem;
+					typename T::const_iterator it_b;
+					typename T::const_iterator next_it_b;
 
 					if (pairs[i].size() != 2
 						|| pairs[i + 1].size() != 2)
@@ -212,12 +213,12 @@ namespace PmergeMe
 								+ "Some container doesn't "
 								+ "contain a pair.");
 					}
-					it_second_elem = pairs[i].begin();
-					std::advance(it_second_elem, 1);
-					next_it_second_elem = pairs[i + 1].begin();
-					std::advance(next_it_second_elem, 1);
+					it_b = pairs[i].begin();
+					std::advance(it_b, 1);
+					next_it_b = pairs[i + 1].begin();
+					std::advance(next_it_b, 1);
 					this->comp_cnt++;
-					if (!(*it_second_elem < *next_it_second_elem))
+					if (!(*it_b < *next_it_b))
 					{
 						return false;
 					}
@@ -240,9 +241,9 @@ namespace PmergeMe
 			 * 			provides `push_back()`,
 			 * 			`const_iterator` to
 			 * 			iterate through it,
-			 * 			and `begin()`, and `end()`
-			 * 			methods to obtain
-			 * 			such iterators.
+			 * 			and `begin()` method
+			 * 			to obtain
+			 * 			such iterator.
 			 * @param	pairs		Pointer to containers
 			 * 				of type \t T,
 			 * 				each containing
@@ -267,11 +268,58 @@ namespace PmergeMe
 				// Larger elements from all pairs.
 				for (size_t i = 0; i < PAIRS_CNT; i++)
 				{
-					typename T::const_iterator it_second_elem;
+					typename T::const_iterator it_b;
 
-					it_second_elem = pairs_with_sorted_content[i].begin();
-					std::advance(it_second_elem, 1);
-					ret.push_back(*it_second_elem);
+					it_b = pairs_with_sorted_content[i].begin();
+					std::advance(it_b, 1);
+					ret.push_back(*it_b);
+				}
+				return ret;
+			}
+
+			/**
+			 * Populate pend with lesser elements
+			 * from second and later pairs.
+			 * @warning	It's up to you to ensure
+			 * 		each container
+			 * 		in \p pairs_with_sorted_content
+			 * 		is actually a pair.
+			 * @throw	std::bad_alloc	Some allocation failed.
+			 * @tparam	T	A container type that
+			 * 			saves the order
+			 * 			of inserted elements,
+			 * 			provides `push_back()`,
+			 * 			`const_iterator` to
+			 * 			iterate through it,
+			 * 			and `begin()` method
+			 * 			to obtain
+			 * 			such iterator.
+			 * @param	pairs		Pointer to containers
+			 * 				of type \t T,
+			 * 				each containing
+			 * 				a sorted pair of elements.
+			 * @param	PAIRS_CNT	Size of \p pairs.
+			 * @return	Main chain suitable
+			 * 		for "insertion" phase.
+			 */
+			template <typename T>
+			T populate_pend(const T * pairs_with_sorted_content,
+					const size_t PAIRS_CNT)
+			{
+				T ret;
+
+				// Edge case, should never happen.
+				if (PAIRS_CNT == 0)
+				{
+					return ret;
+				}
+				// Lesser elements from second and later pairs.
+				for (size_t i = 1; i < PAIRS_CNT; i++)
+				{
+					typename T::const_iterator it_a;
+
+					it_a = pairs_with_sorted_content[i].begin();
+					ret.push_back(*it_a);
 				}
 				return ret;
 			}
@@ -340,6 +388,17 @@ namespace PmergeMe
 				try
 				{
 					main_chain = this->populate_main_chain(
+							pairs_with_sorted_content,
+							pairs_cnt);
+				}
+				catch (const std::bad_alloc & e)
+				{
+					delete [] pairs_with_sorted_content;
+					throw std::bad_alloc();
+				}
+				try
+				{
+					pend = this->populate_pend(
 							pairs_with_sorted_content,
 							pairs_cnt);
 				}
