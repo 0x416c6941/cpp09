@@ -320,10 +320,19 @@ namespace PmergeMe
 				}
 				pairs_with_sorted_content = this->get_pairs_with_sorted_content(
 						IN);
+				// " ... then we sort ... larger elements"
+				// "of the pairs, using merge insertion",
+				// however we need to know when to call
+				// the recursive sort and when NOT to.
+				// Comparisons below are therefore required,
+				// despite the main purpose of the algorithm
+				// to have as little element comparisons
+				// as possible.
 				if (!are_pairs_sorted_by_second_element(
 						pairs_with_sorted_content,
 						pairs_cnt))
 				{
+					// TODO.
 					std::cout << "LOG: Pairs aren't sorted." << std::endl;
 					delete [] pairs_with_sorted_content;
 					return T();

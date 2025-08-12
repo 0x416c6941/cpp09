@@ -5,8 +5,9 @@
 #include <limits>
 #include <stdexcept>
 #include <iterator>
-#include <iostream>
+#include <cstddef>
 #include "PmergeMe.hpp"
+#include <iostream>
 
 /**
  * Namespace dedicated specifically to PmergeMe
@@ -33,6 +34,25 @@ namespace PmergeMe
 	 * 		the order of elements preserved.
 	 */
 	std::list<int> parse_argv(int argc, char * argv[]);
+
+	/**
+	 * Print container with beginning iterator \p begin
+	 * and ending iterator \p end to `stdout`.
+	 * @tparam	Iterator	Iterator of a container
+	 * 				to print content of on `stdout`.
+	 * @param	begin		Iterator of type \t T,
+	 * 				which is a beginning of that container.
+	 * @param	begin		Iterator of type \t T,
+	 * 				which is an ending of that container.
+	 */
+	template <typename Iterator>
+	void print_container(Iterator begin, Iterator end);
+
+	/**
+	 * Print \p TMDIFF on `stdout`.
+	 * @param	TMDIFF	Time diff to print on `stdout`.
+	 */
+	void print_timediff(const struct PmergeMe::PmergeMe::timediff & TMDIFF);
 
 	static std::list<int> parse_arg(char * arg)
 	{
@@ -105,6 +125,31 @@ namespace PmergeMe
 		}
 		return ret;
 	}
+
+	template <typename Iterator>
+	void print_container(Iterator begin, Iterator end)
+	{
+		bool first_element = true;
+
+		while (begin != end)
+		{
+			if (!first_element)
+			{
+				std::cout << ' ';
+			}
+			first_element = false;
+			std::cout << *begin;
+			std::advance(begin, 1);
+		}
+	}
+
+	void print_timediff(const struct PmergeMe::PmergeMe::timediff & TMDIFF)
+	{
+		// Microseconds.
+		double us = TMDIFF.tv_sec * 1e6 + TMDIFF.tv_nsec / 1e3;
+
+		std::cout << us;
+	}
 }
 
 // XXX: There's no limitations or instructions
@@ -113,10 +158,11 @@ namespace PmergeMe
 int main(int argc, char * argv[])
 {
 	std::list<int> input, test;
-	const std::string	ERROR_MSG = "Error",
-				OOM_MSG = "OOM";
+	const size_t MAX_ELEMENTS = 9999;
 	PmergeMe::PmergeMe solver;
 	struct PmergeMe::PmergeMe::timediff time_taken;
+	const std::string	ERROR_MSG = "Error",
+				OOM_MSG = "OOM";
 
 	if (argc <= 1)
 	{
@@ -138,7 +184,27 @@ int main(int argc, char * argv[])
 		std::cerr << OOM_MSG << std::endl;
 		return EXIT_FAILURE;
 	}
+	// Prevent possible stack smashing.
+	if (input.size() > MAX_ELEMENTS)
+	{
+		std::cerr << ERROR_MSG << std::endl;
+		return EXIT_FAILURE;
+	}
 	time_taken = solver.sort(input, test);
-	(void) time_taken;
+	// "Before:\t", "After:\t".
+	std::cout << "Before:\t";
+	PmergeMe::print_container(input.begin(), input.end());
+	std::cout << std::endl
+			<< "After:\t";
+	PmergeMe::print_container(test.begin(), test.end());
+	// Time taken to sort with first container.
+	std::cout << std::endl
+			<< "Time taken to sort with std::list<int>:\t";
+	PmergeMe::print_timediff(time_taken);
+	std::cout << " us" << std::endl;
+	// Comparison operations taken to sort the data
+	// with first container.
+	std::cout << "Comparison OPs taken to sort with std::list<int>:\t"
+			<< solver.get_comparison_count() << std::endl;
 	return 0;
 }
