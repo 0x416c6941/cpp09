@@ -3,14 +3,13 @@
 #include <cstddef>
 
 PmergeMe::PmergeMe::PmergeMe()
-	: comp_cnt(0)
 {
 }
 
 /*
 PmergeMe::PmergeMe::PmergeMe(const PmergeMe & src)
-	: compt_cnt(src.comp_cnt)
 {
+	(void) src;
 }
 
 PmergeMe::PmergeMe & PmergeMe::PmergeMe::operator = (const PmergeMe & src)
@@ -19,7 +18,6 @@ PmergeMe::PmergeMe & PmergeMe::PmergeMe::operator = (const PmergeMe & src)
 	{
 		return *this;
 	}
-	this->comp_cnt = src.comp_cnt;
 	return *this;
 }
  */
@@ -98,9 +96,4 @@ PmergeMe::PmergeMe::GetTimeFail::~GetTimeFail() throw()
 const char * PmergeMe::PmergeMe::GetTimeFail::what() const throw()
 {
 	return this->msg.c_str();
-}
-
-size_t PmergeMe::PmergeMe::get_comparison_count() const
-{
-	return this->comp_cnt;
 }

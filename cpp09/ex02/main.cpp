@@ -202,9 +202,5 @@ int main(int argc, char * argv[])
 			<< "Time taken to sort with std::list<int>:\t";
 	PmergeMe::print_timediff(time_taken);
 	std::cout << " us" << std::endl;
-	// Comparison operations taken to sort the data
-	// with first container.
-	std::cout << "Comparison OPs taken to sort with std::list<int>:\t"
-			<< solver.get_comparison_count() << std::endl;
 	return 0;
 }

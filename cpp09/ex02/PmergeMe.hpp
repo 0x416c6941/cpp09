@@ -29,7 +29,7 @@ namespace PmergeMe
 			/**
 			 * An exception that's thrown when
 			 * `PmergeMe::are_pairs_sorted_by_second_element(
-			 * 	Iterator, Iterator)`
+			 * 	const T *, const size_t)`
 			 * finds container that doesn't contain a pair
 			 * (isn't of size 2).
 			 * @class	InvalidPairSize
@@ -49,9 +49,6 @@ namespace PmergeMe
 
 					virtual const char * what() const throw();
 			};
-
-			// Count of element's comparisons.
-			size_t comp_cnt;
 
 			/**
 			 * Split \p IN to pairs.
@@ -153,7 +150,6 @@ namespace PmergeMe
 					// Hence not checking if `b`
 					// is within the bounds of `ret[i]`.
 					std::advance(it_b, 1);
-					this->comp_cnt++;
 					if (!(*it_a < *it_b))
 					{
 						std::iter_swap(it_a, it_b);
@@ -217,7 +213,6 @@ namespace PmergeMe
 					std::advance(it_b, 1);
 					next_it_b = pairs[i + 1].begin();
 					std::advance(next_it_b, 1);
-					this->comp_cnt++;
 					if (!(*it_b < *next_it_b))
 					{
 						return false;
@@ -575,7 +570,6 @@ namespace PmergeMe
 				struct timespec begin_tm, end_tm;
 				struct timediff ret;
 
-				this->comp_cnt = 0;
 				// "Forbidden functions: none",
 				// therefore a system call to get precise time
 				// in nanoseconds must be allowed.
@@ -596,12 +590,6 @@ namespace PmergeMe
 				ret.tv_nsec = end_tm.tv_nsec - begin_tm.tv_nsec;
 				return ret;
 			}
-
-			/**
-			 * Getter for `comp_cnt`.
-			 * @return	`comp_cnt`.
-			 */
-			size_t get_comparison_count() const;
 	};
 }
 
