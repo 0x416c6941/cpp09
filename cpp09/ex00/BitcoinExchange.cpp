@@ -312,7 +312,8 @@ std::string BitcoinExchange::get_date_substr(const std::string & line,
 
 	errno = 0;
 	year = strtol(line_c_str_begin, &line_c_str_pos, STRTOL_BASE);
-	if (*line_c_str_pos++ != '-' || errno == ERANGE)
+	if (*line_c_str_pos++ != '-' || errno == ERANGE
+		|| year < this->MIN_YEAR || year > this->MAX_YEAR)
 	{
 		throw InvalidDate(EXCEPTION_MSG);
 	}

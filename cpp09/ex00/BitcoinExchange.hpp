@@ -17,6 +17,10 @@ class BitcoinExchange
 	private:
 		std::map<std::string, double> history;
 
+		// I really don't want to solve the date
+		// with std::setw() and std::setfill().
+		static const long MIN_YEAR = 1000, MAX_YEAR = 9999;
+
 		// For internal use in `read_history()`.
 		// It's not stated in subject that first column
 		// must necessarily be "date", it may therefore
