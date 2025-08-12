@@ -59,6 +59,9 @@ namespace PmergeMe
 			 * last element will remain untouched.
 			 * @warning	Type stored in \t T
 			 * 		must be @c CopyConstructible.
+			 * @warning	It's up to you to ensure
+			 * 		there are at least two elements
+			 * 		in \p IN.
 			 * @throw	std::bad_alloc	Some allocation failed.
 			 * @tparam	T	A container type that
 			 * 			saves the order
@@ -108,6 +111,9 @@ namespace PmergeMe
 			 * 		must have `operator < ()`
 			 * 		overloaded for it
 			 * 		and be @c CopyConstructible.
+			 * @warning	It's up to you to ensure
+			 * 		there are at least two elements
+			 * 		in \p IN.
 			 * @throw	std::bad_alloc	Some allocation failed.
 			 * @tparam	T	A container type that
 			 * 			saves the order
@@ -251,6 +257,7 @@ namespace PmergeMe
 			{
 				T ret;
 
+				// Edge case, should never happen.
 				if (PAIRS_CNT == 0)
 				{
 					return ret;
@@ -305,15 +312,15 @@ namespace PmergeMe
 				size_t pairs_cnt;
 				T main_chain, pend;
 
-				pairs_with_sorted_content = this->get_pairs_with_sorted_content(
-						IN);
 				pairs_cnt = IN.size() / 2;
-				// Edge case, although should never happen.
+				// Edge case.
 				if (pairs_cnt == 0)
 				{
 					return IN;
 				}
-				else if (!are_pairs_sorted_by_second_element(
+				pairs_with_sorted_content = this->get_pairs_with_sorted_content(
+						IN);
+				if (!are_pairs_sorted_by_second_element(
 						pairs_with_sorted_content,
 						pairs_cnt))
 				{
