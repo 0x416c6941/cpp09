@@ -241,8 +241,8 @@ void BitcoinExchange::append_history(const std::string & line,
 			throw HistoryFileIsCorrupted(MSG_PREFIX
 					+ INVALID_RATE_MSG);
 		}
-		processed_bytes += static_cast<size_t> (line_c_str_pos
-				- line_c_str_begin);
+		processed_bytes += static_cast<size_t>(
+				line_c_str_pos - line_c_str_begin);
 	}
 	// ',' after first column.
 	if (!(processed_bytes < line.length())
@@ -266,8 +266,8 @@ void BitcoinExchange::append_history(const std::string & line,
 			throw HistoryFileIsCorrupted(MSG_PREFIX
 					+ INVALID_RATE_MSG);
 		}
-		processed_bytes += static_cast<size_t> (line_c_str_pos
-				- line_c_str_begin);
+		processed_bytes += static_cast<size_t>(
+				line_c_str_pos - line_c_str_begin);
 	}
 	else if (first_column == EXCHANGE_RATE)
 	{
@@ -351,8 +351,8 @@ std::string BitcoinExchange::get_date_substr(const std::string & line,
 			throw InvalidDate(EXCEPTION_MSG);
 		}
 	}
-	processed_bytes_in_line = static_cast<size_t> (line_c_str_pos
-			- line_c_str_begin);
+	processed_bytes_in_line = static_cast<size_t>(
+			line_c_str_pos - line_c_str_begin);
 	ret << year
 		<< '-' << std::setw(MM_DD_WIDTH) << std::setfill('0') << month
 		<< '-' << std::setw(MM_DD_WIDTH) << std::setfill('0') << day;
