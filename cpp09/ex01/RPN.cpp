@@ -158,7 +158,7 @@ int RPN::evaluate(const char * expression)
 						+ "Found illegal number "
 						+ " or character.");
 			}
-			numbers.push(static_cast<int> (to_push));
+			numbers.push(static_cast<int>(to_push));
 			expression = expression_pos;
 		}
 		// Skip ' '.
