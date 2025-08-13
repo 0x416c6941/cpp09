@@ -1,13 +1,12 @@
-#include <list>
 #include <string>
 #include <cerrno>
 #include <cstdlib>
 #include <limits>
 #include <stdexcept>
-#include <iterator>
+#include <vector>
 #include <cstddef>
-#include "PmergeMe.hpp"
 #include <iostream>
+//#include "PmergeMe.hpp"
 
 /**
  * Namespace dedicated specifically to PmergeMe
@@ -17,23 +16,58 @@
 namespace PmergeMe
 {
 	/**
-	 * Parse a single \p arg to a list of positive integers.
-	 * @throw	std::invalid_argument	Received an invalid input.
-	 * @param	arg	One of arguments from @c argv.
-	 * @return	List of parsed integers from \p arg with
-	 * 		the order of elements preserved.
+	 * The time difference in seconds and nanoseconds
+	 * between end time and begin time of sorting process,
+	 * since it's not guaranteed by standard that
+	 * `tv_sec` and `tv_nsec` of `struct timespec`
+	 * can hold negative values.
+	 * @struct	timediff
 	 */
-	static std::list<int> parse_arg(char * arg);
+	struct timediff
+	{
+		long tv_sec;
+		long tv_nsec;
+	};
 
 	/**
-	 * Parse \p argv of \p argc elements to a list of positive integers.
+	 * Parse a single \p arg to a \t T of unsigned integers.
+	 * @warning	If type stored in \t T isn't `unsigned int`,
+	 * 		the correct behavior of this function
+	 * 		isn't guaranteed.
+	 * @tparam	T	Container, that saves the order
+	 * 			of inserted elements
+	 * 			and provides `push_back()`
+	 * 			and `empty()` methods.
+	 * @throw	std::bad_alloc		Some allocation failed.
+	 * @throw	std::invalid_argument	Received an invalid input.
+	 * @param	arg	One of arguments from @c argv.
+	 * @return	\t T of parsed unsigned integers from \p arg
+	 * 		with the order of elements preserved.
+	 */
+	template <typename T>
+	static T parse_arg(char * arg);
+
+	/**
+	 * Parse \p argv of \p argc elements to a \t T of unsigned integers.
+	 * @warning	If type stored in \t T isn't `unsigned int`,
+	 * 		the correct behavior of this function
+	 * 		isn't guaranteed.
+	 * @tparam	T	Container, that saves the order
+	 * 			of inserted elements
+	 * 			and provides `insert()`,
+	 * 			`push_back()` and `empty()` methods,
+	 * 			as well as `const_iterator`
+	 * 			and `begin()` and `end()` methods
+	 * 			to obtain it.
+	 * @throw	std::bad_alloc		Some allocation failed.
 	 * @throw	std::invalid_argument	Received an invalid input.
 	 * @param	argc	Argument count.
 	 * @param	argv	Argument vector.
-	 * @return	List of parsed integers from \p argv with
-	 * 		the order of elements preserved.
+	 * @return	\t T of parsed unsigned integers from \p argv
+	 * 		with the order of elements preserved.
 	 */
-	std::list<int> parse_argv(int argc, char * argv[]);
+	template <typename T>
+	T parse_argv(int argc, char * argv[]);
 
 	/**
 	 * Print container with beginning iterator \p begin
@@ -42,23 +76,24 @@ namespace PmergeMe
 	 * 				to print content of on `stdout`.
 	 * @param	begin		Iterator of type \t T,
 	 * 				which is a beginning of that container.
-	 * @param	begin		Iterator of type \t T,
+	 * @param	end		Iterator of type \t T,
 	 * 				which is an ending of that container.
 	 */
-	template <typename Iterator>
+	template <class Iterator>
 	void print_container(Iterator begin, Iterator end);
 
 	/**
 	 * Print \p TMDIFF on `stdout`.
 	 * @param	TMDIFF	Time diff to print on `stdout`.
 	 */
-	void print_timediff(const struct PmergeMe::PmergeMe::timediff & TMDIFF);
+	void print_timediff(const struct timediff & TMDIFF);
 
-	static std::list<int> parse_arg(char * arg)
+	template <typename T>
+	static T parse_arg(char * arg)
 	{
-		std::list<int> ret;
-		long to_push_back;
-		const int STRTOL_BASE = 10;
+		T ret;
+		unsigned long int to_push_back;
+		const int STRTOUL_BASE = 10;
 		const std::string MSG_PREFIX = "parse_arg():: ";
 
 		while (*arg != '\0')
@@ -75,16 +110,15 @@ namespace PmergeMe
 				break;
 			}
 			errno = 0;
-			to_push_back = strtol(arg, &arg, STRTOL_BASE);
+			to_push_back = strtoul(arg, &arg, STRTOUL_BASE);
 			if (!(*arg == '\0' || *arg == ' ') || errno == ERANGE
-				|| to_push_back <= 0
-				|| to_push_back > std::numeric_limits<int>::max())
+				|| to_push_back > std::numeric_limits<unsigned int>::max())
 			{
 				throw std::invalid_argument(MSG_PREFIX
 						+ "Some number in an argument "
 						+ "is invalid.");
 			}
-			ret.push_back(static_cast<int> (to_push_back));
+			ret.push_back(static_cast<unsigned int>(to_push_back));
 		}
 		if (ret.empty())
 		{
@@ -95,24 +129,29 @@ namespace PmergeMe
 		return ret;
 	}
 
-	std::list<int> parse_argv(int argc, char * argv[])
+	template <typename T>
+	T parse_argv(int argc, char * argv[])
 	{
-		std::list<int> ret, to_splice;
+		T ret, to_insert_at_the_end;
 		const std::string MSG_PREFIX = "parse_argv():: ";
 
 		// Single arguments in `argv`.
 		for (int i = 0; i < argc; i++)
 		{
-			to_splice = parse_arg(argv[i]);
-			ret.splice(ret.end(), to_splice);
+			to_insert_at_the_end = parse_arg<T>(argv[i]);
+			ret.insert(ret.end(),
+					to_insert_at_the_end.begin(),
+					to_insert_at_the_end.end());
 		}
 		// Checking for duplicates.
-		for (std::list<int>::const_iterator it1 = ret.begin();
-				it1 != ret.end(); ++it1)
+		for (typename T::const_iterator it1 = ret.begin();
+				it1 != ret.end();
+				++it1)
 		{
-			std::list<int>::const_iterator it2 = it1;
+			typename T::const_iterator it2;
 
-			std::advance(it2, 1);
+			it2 = it1;
+			++it2;
 			for (; it2 != ret.end(); ++it2)
 			{
 				if (*it1 == *it2)
@@ -126,7 +165,7 @@ namespace PmergeMe
 		return ret;
 	}
 
-	template <typename Iterator>
+	template <class Iterator>
 	void print_container(Iterator begin, Iterator end)
 	{
 		bool first_element = true;
@@ -143,7 +182,7 @@ namespace PmergeMe
 		}
 	}
 
-	void print_timediff(const struct PmergeMe::PmergeMe::timediff & TMDIFF)
+	void print_timediff(const struct timediff & TMDIFF)
 	{
 		// Microseconds.
 		double us = TMDIFF.tv_sec * 1e6 + TMDIFF.tv_nsec / 1e3;
@@ -157,10 +196,8 @@ namespace PmergeMe
 // Therefore, I've done everything according to my own discretion.
 int main(int argc, char * argv[])
 {
-	std::list<int> input, test;
+	std::vector<unsigned int> input;
 	const size_t MAX_ELEMENTS = 9999;
-	PmergeMe::PmergeMe solver;
-	struct PmergeMe::PmergeMe::timediff time_taken;
 	const std::string	ERROR_MSG = "Error",
 				OOM_MSG = "OOM";
 
@@ -172,7 +209,8 @@ int main(int argc, char * argv[])
 	}
 	try
 	{
-		input = PmergeMe::parse_argv(--argc, ++argv);
+		input = PmergeMe::parse_argv<std::vector<unsigned int> >(
+				--argc, ++argv);
 	}
 	catch (const std::invalid_argument & e)
 	{
@@ -184,23 +222,11 @@ int main(int argc, char * argv[])
 		std::cerr << OOM_MSG << std::endl;
 		return EXIT_FAILURE;
 	}
-	// Prevent possible stack smashing.
+	// Stack smashing.
 	if (input.size() > MAX_ELEMENTS)
 	{
 		std::cerr << ERROR_MSG << std::endl;
 		return EXIT_FAILURE;
 	}
-	time_taken = solver.sort(input, test);
-	// "Before:\t", "After:\t".
-	std::cout << "Before:\t";
-	PmergeMe::print_container(input.begin(), input.end());
-	std::cout << std::endl
-			<< "After:\t";
-	PmergeMe::print_container(test.begin(), test.end());
-	// Time taken to sort with first container.
-	std::cout << std::endl
-			<< "Time taken to sort with std::list<int>:\t";
-	PmergeMe::print_timediff(time_taken);
-	std::cout << " us" << std::endl;
 	return 0;
 }
