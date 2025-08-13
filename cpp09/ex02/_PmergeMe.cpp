@@ -1,12 +1,12 @@
 // TODO: Rename this file to "PmergeMe.tpp".
 
-#include "PmergeMe.hpp"
 #include <string>
 #include <cerrno>
 #include <cstdlib>
 #include <limits>
 #include <stdexcept>
 #include <fstream>
+#include <time.h>
 
 namespace PmergeMe
 {
@@ -14,8 +14,8 @@ namespace PmergeMe
 	static T parse_arg(char * arg)
 	{
 		T ret;
-		unsigned long int to_push_back;
-		const int STRTOUL_BASE = 10;
+		long int to_push_back;
+		const int STRTOL_BASE = 10;
 		const std::string MSG_PREFIX = "parse_arg():: ";
 
 		while (*arg != '\0')
@@ -32,16 +32,16 @@ namespace PmergeMe
 				break;
 			}
 			errno = 0;
-			to_push_back = strtoul(arg, &arg, STRTOUL_BASE);
+			to_push_back = strtol(arg, &arg, STRTOL_BASE);
 			if (!(*arg == '\0' || *arg == ' ') || errno == ERANGE
 				|| !(to_push_back > 0)
-				|| to_push_back > std::numeric_limits<unsigned int>::max())
+				|| to_push_back > std::numeric_limits<int>::max())
 			{
 				throw std::invalid_argument(MSG_PREFIX
 						+ "Some number in an argument "
 						+ "is invalid.");
 			}
-			ret.push_back(static_cast<unsigned int>(to_push_back));
+			ret.push_back(static_cast<int>(to_push_back));
 		}
 		if (ret.empty())
 		{
@@ -183,6 +183,32 @@ namespace PmergeMe
 	template <typename T>
 	struct timediff PmergeMe<Sort_Container>::sort(const T & what)
 	{
+		struct timespec begin_tm;
+		struct timespec end_tm;
+		struct timediff tm_diff;
+		const std::string MSG_PREFIX = "PmergeMe<Sort_Container>::sort(): ";
+		const std::string GET_TIME_FAIL_MSG = "clock_gettime() failed.";
+
+		// "Forbidden functions: None",
+		// also there's no C++98 function to accurately
+		// measure time up down to microseconds.
+		//
+		// `clock_gettime()` provides identical functionality
+		// as `gettimeofday()` does in our case,
+		// it's just that `gettimeofday()` is deprecated
+		// as of POSIX.1-2008.
+		if (clock_gettime(CLOCK_MONOTONIC, &begin_tm) == -1)
+		{
+			throw GetTimeFail(MSG_PREFIX + GET_TIME_FAIL_MSG);
+		}
+		if (clock_gettime(CLOCK_MONOTONIC, &end_tm) == -1)
+		{
+			throw GetTimeFail(MSG_PREFIX + GET_TIME_FAIL_MSG);
+		}
+		tm_diff.tv_sec = end_tm.tv_sec - begin_tm.tv_sec;
+		tm_diff.tv_nsec = end_tm.tv_nsec - begin_tm.tv_nsec;
+		return tm_diff;
+
 		(void) what;
 	}
 

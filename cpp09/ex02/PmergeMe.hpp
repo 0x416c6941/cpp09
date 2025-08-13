@@ -26,8 +26,8 @@ namespace PmergeMe
 	};
 
 	/**
-	 * Parse a single \p arg to a \t T of unsigned integers.
-	 * @warning	If type stored in \t T isn't `unsigned int`,
+	 * Parse a single \p arg to a \t T of positive integers.
+	 * @warning	If type stored in \t T isn't `int`,
 	 * 		the correct behavior of this function
 	 * 		isn't guaranteed.
 	 * @tparam	T	Container, that saves the order
@@ -37,15 +37,15 @@ namespace PmergeMe
 	 * @throw	std::bad_alloc		Some allocation failed.
 	 * @throw	std::invalid_argument	Received an invalid input.
 	 * @param	arg	One of arguments from @c argv.
-	 * @return	\t T of parsed unsigned integers from \p arg
+	 * @return	\t T of parsed positive integers from \p arg
 	 * 		with the order of elements preserved.
 	 */
 	template <typename T>
 	static T parse_arg(char * arg);
 
 	/**
-	 * Parse \p argv of \p argc elements to a \t T of unsigned integers.
-	 * @warning	If type stored in \t T isn't `unsigned int`,
+	 * Parse \p argv of \p argc elements to a \t T of positive integers.
+	 * @warning	If type stored in \t T isn't `int`,
 	 * 		the correct behavior of this function
 	 * 		isn't guaranteed.
 	 * @tparam	T	Container, that saves the order
@@ -59,7 +59,7 @@ namespace PmergeMe
 	 * @throw	std::invalid_argument	Received an invalid input.
 	 * @param	argc	Argument count.
 	 * @param	argv	Argument vector.
-	 * @return	\t T of parsed unsigned integers from \p argv
+	 * @return	\t T of parsed positive integers from \p argv
 	 * 		with the order of elements preserved.
 	 */
 	template <typename T>
@@ -68,6 +68,8 @@ namespace PmergeMe
 	/**
 	 * Print container with beginning iterator \p begin
 	 * and ending iterator \p end to \p os.
+	 * @warning	Type stored in container must have
+	 * 		`operator << ()` overloaded for it.
 	 * @tparam	Iterator	Iterator of a container
 	 * 				to print content of on `stdout`.
 	 * @param	os		File based stream to write
@@ -92,7 +94,7 @@ namespace PmergeMe
 	 * An implementation of merge-insertion sort
 	 * (Ford-Johnson algorithm).
 	 * @warning	If type stored in \t Sort_Container
-	 * 		isn't `unsigned it`, the correct behavior
+	 * 		isn't `int`, the correct behavior
 	 * 		of this class isn't guaranteed.
 	 * @tparam	Sort_Container	A container type that preserves
 	 * 				the order of inserted elements,
@@ -148,7 +150,7 @@ namespace PmergeMe
 			/**
 			 * Sort \p WHAT and save result to `data`.
 			 * @warning	Type stored in \t T
-			 * 		must be `unsigned int`,
+			 * 		must be `int`,
 			 * 		otherwise the correct behavior
 			 * 		of this method is not guaranteed.
 			 * @warning	If `data` already stores

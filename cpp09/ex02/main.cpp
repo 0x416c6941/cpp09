@@ -11,7 +11,7 @@
 // Therefore, I've done everything according to my own discretion.
 int main(int argc, char * argv[])
 {
-	std::vector<unsigned int> input;
+	std::vector<int> input;
 	const size_t MAX_ELEMENTS = 9999;
 	const std::string	ERROR_MSG = "Error",
 				OOM_MSG = "OOM";
@@ -24,7 +24,7 @@ int main(int argc, char * argv[])
 	}
 	try
 	{
-		input = PmergeMe::parse_argv<std::vector<unsigned int> >(
+		input = PmergeMe::parse_argv<std::vector<int> >(
 				--argc, ++argv);
 	}
 	catch (const std::invalid_argument & e)
