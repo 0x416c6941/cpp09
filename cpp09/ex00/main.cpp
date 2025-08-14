@@ -97,7 +97,7 @@ static int convert(const BitcoinExchange & btc_exchange,
 		// Reading value.
 		line_c_str_begin = line.c_str() + processed_bytes_in_line;
 		errno = 0;
-		val = strtod(line_c_str_begin, &line_c_str_pos);
+		val = std::strtod(line_c_str_begin, &line_c_str_pos);
 		if (*line_c_str_pos != '\0' || errno == ERANGE)
 		{
 			std::cerr << BAD_INPUT_MSG << line << std::endl;

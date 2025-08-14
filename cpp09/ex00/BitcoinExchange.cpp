@@ -5,7 +5,6 @@
 #include <cerrno>
 #include <cstdlib>
 #include <iomanip>
-#include <iterator>
 
 BitcoinExchange::BitcoinExchange()
 {
@@ -232,7 +231,7 @@ void BitcoinExchange::append_history(const std::string & line,
 	{
 		line_c_str_begin = line.c_str() + processed_bytes;
 		errno = 0;
-		val = strtod(line_c_str_begin, &line_c_str_pos);
+		val = std::strtod(line_c_str_begin, &line_c_str_pos);
 		// We don't need DBL_EPSILON to compare with range.
 		// DBL_EPSILON is only used when comparing
 		// with a specific value.
@@ -257,7 +256,7 @@ void BitcoinExchange::append_history(const std::string & line,
 	{
 		line_c_str_begin = line.c_str() + processed_bytes;
 		errno = 0;
-		val = strtod(line_c_str_begin, &line_c_str_pos);
+		val = std::strtod(line_c_str_begin, &line_c_str_pos);
 		// We don't need DBL_EPSILON to compare with range.
 		// DBL_EPSILON is only used when comparing
 		// with a specific value.
@@ -311,19 +310,19 @@ std::string BitcoinExchange::get_date_substr(const std::string & line,
 			+ "Date stored in line is invalid.";
 
 	errno = 0;
-	year = strtol(line_c_str_begin, &line_c_str_pos, STRTOL_BASE);
+	year = std::strtol(line_c_str_begin, &line_c_str_pos, STRTOL_BASE);
 	if (*line_c_str_pos++ != '-' || errno == ERANGE
 		|| year < this->MIN_YEAR || year > this->MAX_YEAR)
 	{
 		throw InvalidDate(EXCEPTION_MSG);
 	}
-	month = strtol(line_c_str_pos, &line_c_str_pos, STRTOL_BASE);
+	month = std::strtol(line_c_str_pos, &line_c_str_pos, STRTOL_BASE);
 	if (*line_c_str_pos++ != '-' || errno == ERANGE
 		|| month < 1 || month > 12)
 	{
 		throw InvalidDate(EXCEPTION_MSG);
 	}
-	day = strtol(line_c_str_pos, &line_c_str_pos, STRTOL_BASE);
+	day = std::strtol(line_c_str_pos, &line_c_str_pos, STRTOL_BASE);
 	// Basic day range check.
 	if (errno == ERANGE
 		|| day < 1 || day > 31)
@@ -414,7 +413,9 @@ double BitcoinExchange::get_btc_exchange_rate(const std::string & date) const
 					+ "History is empty.");
 		}
 		it = this->history.end();
-		std::advance(it, -1);
+		// `std::map<Key, T, Compare, Allocator>::{const,}iterator`
+		// is just bidirectional, so we can do that.
+		--it;
 		return it->second;
 	}
 	else if (date < it->first)
@@ -432,7 +433,7 @@ double BitcoinExchange::get_btc_exchange_rate(const std::string & date) const
 			throw NoAvailableLowerDate(MSG_PREFIX
 					+ "No lower date is available in history.");
 		}
-		std::advance(it, -1);
+		--it;
 		return it->second;
 	}
 	return it->second;
