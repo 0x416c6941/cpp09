@@ -147,7 +147,7 @@ int RPN::evaluate(const char * expression)
 		else
 		{
 			errno = 0;
-			to_push = strtol(expression, &expression_pos,
+			to_push = std::strtol(expression, &expression_pos,
 					STRTOL_BASE);
 			if ((*expression_pos != ' ' && *expression_pos != '\0')
 				|| errno == ERANGE
