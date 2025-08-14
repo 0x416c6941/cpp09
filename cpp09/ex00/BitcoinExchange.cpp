@@ -414,7 +414,7 @@ double BitcoinExchange::get_btc_exchange_rate(const std::string & date) const
 		}
 		it = this->history.end();
 		// `std::map<Key, T, Compare, Allocator>::{const,}iterator`
-		// is just bidirectional, so we can do that.
+		// is bidirectional, so thankfully we can do that.
 		--it;
 		return it->second;
 	}
