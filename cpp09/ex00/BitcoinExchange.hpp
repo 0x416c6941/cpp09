@@ -143,7 +143,7 @@ class BitcoinExchange
 		 * 		in format "YYYY-MM-DD".
 		 */
 		std::string get_date_substr(const std::string & line,
-				size_t & processed_bytes_in_line) const;
+				std::size_t & processed_bytes_in_line) const;
 
 		/**
 		 * Read history of BTC exchange rate from \p file.

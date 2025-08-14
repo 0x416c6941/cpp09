@@ -28,7 +28,7 @@ static int convert(const BitcoinExchange & btc_exchange,
 {
 	std::string date;
 	double val;
-	size_t processed_bytes_in_line;
+	std::size_t processed_bytes_in_line;
 	std::string line;
 	// Range of possible BTC amount: [0, MAX].
 	const double MAX = 1000.0;

@@ -144,7 +144,7 @@ void BitcoinExchange::handle_first_line(const std::string & line,
 		enum e_first_db_column & first_column)
 {
 	const std::string DATE = "date", EXCHANGE_RATE = "exchange_rate";
-	size_t processed_bytes = 0;
+	std::size_t processed_bytes = 0;
 	const std::string MSG_PREFIX = "BitcoinExchange::handle_first_line(): ";
 
 	// First column name.
@@ -208,7 +208,7 @@ void BitcoinExchange::append_history(const std::string & line,
 {
 	std::string date;
 	double val;
-	size_t processed_bytes = 0;
+	std::size_t processed_bytes = 0;
 	const char * line_c_str_begin;
 	char * line_c_str_pos;
 	const std::string MSG_PREFIX = "BitcoinExchange::append_history(): ";
@@ -241,7 +241,7 @@ void BitcoinExchange::append_history(const std::string & line,
 			throw HistoryFileIsCorrupted(MSG_PREFIX
 					+ INVALID_RATE_MSG);
 		}
-		processed_bytes += static_cast<size_t>(
+		processed_bytes += static_cast<std::size_t>(
 				line_c_str_pos - line_c_str_begin);
 	}
 	// ',' after first column.
@@ -266,12 +266,12 @@ void BitcoinExchange::append_history(const std::string & line,
 			throw HistoryFileIsCorrupted(MSG_PREFIX
 					+ INVALID_RATE_MSG);
 		}
-		processed_bytes += static_cast<size_t>(
+		processed_bytes += static_cast<std::size_t>(
 				line_c_str_pos - line_c_str_begin);
 	}
 	else if (first_column == EXCHANGE_RATE)
 	{
-		size_t date_substr_len_in_line;
+		std::size_t date_substr_len_in_line;
 		try
 		{
 			date = get_date_substr(line.substr(processed_bytes),
@@ -300,7 +300,7 @@ void BitcoinExchange::append_history(const std::string & line,
 }
 
 std::string BitcoinExchange::get_date_substr(const std::string & line,
-		size_t & processed_bytes_in_line) const
+		std::size_t & processed_bytes_in_line) const
 {
 	std::stringstream ret;
 	long year, month, day;
@@ -351,7 +351,7 @@ std::string BitcoinExchange::get_date_substr(const std::string & line,
 			throw InvalidDate(EXCEPTION_MSG);
 		}
 	}
-	processed_bytes_in_line = static_cast<size_t>(
+	processed_bytes_in_line = static_cast<std::size_t>(
 			line_c_str_pos - line_c_str_begin);
 	ret << year
 		<< '-' << std::setw(MM_DD_WIDTH) << std::setfill('0') << month
