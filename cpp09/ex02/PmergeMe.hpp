@@ -359,8 +359,10 @@ namespace PmergeMe
 			 * 					of pair
 			 * 					to insert
 			 * 					to \p main_chain.
+			 * @return	Index of \p num in \p main_chain
+			 * 		after insertion.
 			 */
-			void insert_pair_to_main_chain(
+			std::size_t insert_pair_to_main_chain(
 					Sort_Container * main_chain,
 					const int LOWER_BOUND_HI,
 					const std::size_t MAIN_CHAIN_ITEMS,

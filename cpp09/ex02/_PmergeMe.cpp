@@ -424,7 +424,7 @@ namespace PmergeMe
 	}
 
 	template <typename Sort_Container>
-	void PmergeMe<Sort_Container>::insert_pair_to_main_chain(
+	std::size_t PmergeMe<Sort_Container>::insert_pair_to_main_chain(
 			Sort_Container * main_chain,
 			const int LOWER_BOUND_HI,
 			const std::size_t MAIN_CHAIN_ITEMS,
@@ -457,6 +457,7 @@ namespace PmergeMe
 		main_chain[insert_i].clear();
 		main_chain[insert_i].push_back(num);
 		main_chain[insert_i].push_back(idx);
+		return insert_i;
 	}
 
 	template <typename Sort_Container>
@@ -475,16 +476,18 @@ namespace PmergeMe
 			typename Sort_Container::const_iterator it_p_num;
 			typename Sort_Container::const_iterator it_p_idx;
 			typename Sort_Container::const_iterator it_p_hi;
+			size_t inserted_pos;
 
 			it_p_num = pend[*it_i].begin();
 			it_p_idx = it_p_num;
 			++it_p_idx;
 			it_p_hi = it_p_idx;
 			++it_p_hi;
-			this->insert_pair_to_main_chain(
+			inserted_pos = this->insert_pair_to_main_chain(
 					main_chain, *it_p_hi,
 					main_chain_items++,
 					*it_p_num, *it_p_idx);
+			(void) inserted_pos;
 			// Increasing index of bigger element in `main_chain`
 			// of each number in `pend`.
 			for (std::size_t pend_i = 0;
@@ -495,7 +498,13 @@ namespace PmergeMe
 
 				it_p = pend[pend_i].begin();
 				std::advance(it_p, 2);
-				*it_p++;
+				(*it_p)++;
+				/**
+				if (*it_p >= static_cast<int>(inserted_pos))
+				{
+					(*it_p)++;
+				}
+				 */
 			}
 		}
 	}
@@ -567,10 +576,10 @@ namespace PmergeMe
 			{
 				bigger_elements.push_back(*b[i].begin());
 			}
-			sorted_pairs_indices = this->get_sorted_sequence_indices(
-					bigger_elements);
 			try
 			{
+				sorted_pairs_indices = this->get_sorted_sequence_indices(
+						bigger_elements);
 				this->reorder_a_and_b(sorted_pairs_indices,
 						a, b, new_a, new_b);
 			}
@@ -627,7 +636,7 @@ namespace PmergeMe
 		try
 		{
 			// `PAIRS_CNT + 1`, because by default
-			// first all element from `a`
+			// first element from `a`
 			// and all elements from `b` get inserted
 			// into `main_chain`.
 			this->insert_pend_to_main_chain(main_chain,
@@ -652,7 +661,7 @@ namespace PmergeMe
 			++it_idx;
 			try
 			{
-				this->insert_pair_to_main_chain(
+				(void) this->insert_pair_to_main_chain(
 						main_chain, -1,
 						PAIRS_CNT * 2,
 						*it_num, *it_idx);
