@@ -542,6 +542,16 @@ namespace PmergeMe
 		Sort_Container insertion_sequence;
 		Sort_Container sorted_sequence_indices;
 
+		// Edge case.
+		if (PAIRS_CNT == 0)
+		{
+			if (TO_SORT.size() == 1)
+			{
+				sorted_sequence_indices.push_back(0);
+			}
+			return sorted_sequence_indices;
+		}
+		// Straggler init.
 		if (TO_SORT.size() % 2 == 1)
 		{
 			typename Sort_Container::const_iterator it;
@@ -561,10 +571,8 @@ namespace PmergeMe
 			straggler->push_back(*it);
 			straggler->push_back(PAIRS_CNT * 2);
 		}
-		else if (PAIRS_CNT == 0)
-		{
-			return sorted_sequence_indices;
-		}
+		// Recursive call to sort bigger numbers
+		// of pairs [ax, bx].
 		if (!(PAIRS_CNT <= 1))
 		{
 			Sort_Container bigger_elements;
@@ -623,8 +631,18 @@ namespace PmergeMe
 		delete [] b;
 		try
 		{
-			this->populate_insertion_sequence(insertion_sequence,
-					PAIRS_CNT - 1);
+			if (PAIRS_CNT != 0)
+			{
+				this->populate_insertion_sequence(
+						insertion_sequence,
+						PAIRS_CNT - 1);
+			}
+			else
+			{
+				this->populate_insertion_sequence(
+						insertion_sequence,
+						PAIRS_CNT);
+			}
 		}
 		catch (const std::bad_alloc & e)
 		{
