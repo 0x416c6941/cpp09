@@ -348,6 +348,62 @@ namespace PmergeMe
 	}
 
 	template <typename Sort_Container>
+	void PmergeMe<Sort_Container>::populate_insertion_sequence(
+			Sort_Container & insertion_sequence,
+			const std::size_t PEND_SIZE)
+	{
+		insertion_sequence.clear();
+		size_t jn_i;
+
+		// Populate `this->jn` with first two Jacobsthal numbers.
+		if (this->jn.empty())
+		{
+			this->jn.push_back(0);
+			this->jn.push_back(1);
+		}
+		// Starting with 3rd number of Jacobsthal sequence (3).
+		jn_i = 3;
+		while (insertion_sequence.size() < PEND_SIZE)
+		{
+			// "Upper" and "lower", respectively.
+			typename Sort_Container::const_iterator it_u;
+			typename Sort_Container::const_iterator it_l;
+			int upper, lower;
+
+			// Apending `this->jn`.
+			while (!(this->jn.size() > jn_i))
+			{
+				// "Last" and "penultimate", respectively.
+				typename Sort_Container::const_iterator it_l;
+				typename Sort_Container::const_iterator it_p;
+
+				// By this point, we're guaranteed
+				// to have at least 2 numbers in `this->jn`.
+				it_l = this->jn.begin();
+				std::advance(it_l, this->jn.size() - 1);
+				it_p = this->jn.begin();
+				std::advance(it_p, this->jn.size() - 2);
+				this->jn.push_back(*it_l + 2 * *it_p);
+			}
+			it_u = this->jn.begin();
+			std::advance(it_u, jn_i);
+			upper = *it_u - 1;
+			it_l = this->jn.begin();
+			std::advance(it_l, jn_i - 1);
+			lower = *it_l;
+			jn_i++;
+			if (static_cast<int>(PEND_SIZE) < upper)
+			{
+				upper = static_cast<int>(PEND_SIZE);
+			}
+			while (upper >= lower)
+			{
+				insertion_sequence.push_back(upper-- - 1);
+			}
+		}
+	}
+
+	template <typename Sort_Container>
 	Sort_Container PmergeMe<Sort_Container>::get_sorted_sequence_indices(
 			const Sort_Container & TO_SORT)
 	{

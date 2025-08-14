@@ -295,6 +295,24 @@ namespace PmergeMe
 					const std::size_t A_SIZE);
 
 			/**
+			 * Populate \p insertion_sequence with help
+			 * of Jacobsthal numbers.
+			 * @warning	If \p insertion_sequence isn't empty,
+			 * 		data in it will be discarded.
+			 * @param	insertion_sequence	Where to store
+			 * 					the insertion
+			 * 					sequence.
+			 * @param	PEND_SIZE		For how many
+			 * 					elements
+			 * 					to generate
+			 * 					insertion
+			 * 					sequence.
+			 */
+			void populate_insertion_sequence(
+					Sort_Container & insertion_sequence,
+					const std::size_t PEND_SIZE);
+
+			/**
 			 * Get such sequence of indices
 			 * of elements of \p TO_SORT,
 			 * so that \p TO_SORT would be sorted.
