@@ -1,8 +1,9 @@
 #ifndef PMERGEME_HPP
 #define PMERGEME_HPP
 
-#include <fstream>
+#include <ostream>
 #include <string>
+#include <cstddef>
 
 /**
  * Namespace dedicated specifically to PmergeMe to potentially
@@ -72,7 +73,7 @@ namespace PmergeMe
 	 * 		`operator << ()` overloaded for it.
 	 * @tparam	Iterator	Iterator of a container
 	 * 				to print content of on `stdout`.
-	 * @param	os		File based stream to write
+	 * @param	os		Stream to write
 	 * 				container content to.
 	 * @param	begin		Iterator of type \t T,
 	 * 				which is a beginning of that container.
@@ -80,15 +81,16 @@ namespace PmergeMe
 	 * 				which is an ending of that container.
 	 */
 	template <class Iterator>
-	void print_container(Iterator begin, Iterator end);
+	void print_container(
+			std::ostream & os, Iterator begin, Iterator end);
 
 	/**
 	 * Write \p TMDIFF to \p os.
-	 * @param	os	File based stream to write \p TMDIFF to.
+	 * @param	os	Stream to write \p TMDIFF to.
 	 * @param	TMDIFF	Time diff to print to \p os.
 	 */
 	void print_timediff(
-			std::ofstream & os, const struct timediff & TMDIFF);
+			std::ostream & os, const struct timediff & TMDIFF);
 
 	/**
 	 * An implementation of merge-insertion sort
@@ -104,7 +106,7 @@ namespace PmergeMe
 	 * 				iterate through it
 	 * 				and `begin()` and `end()` methods
 	 * 				to obtain such iterators.
-	 * 				It must have default constructor
+	 * 				It must also have default constructor
 	 * 				accessible and be @c CopyConstructible
 	 * 				and @c CopyAssignable.
 	 * @class	PmergeMe
@@ -119,7 +121,196 @@ namespace PmergeMe
 			PmergeMe(const PmergeMe & src);
 			PmergeMe & operator = (const PmergeMe & src);
 
+			/**
+			 * Where to store the sorted sequence of numbers.
+			 * @var	data
+			 */
 			Sort_Container data;
+
+			/**
+			 * "Jacobsthal numbers".
+			 * Used to determine the insertion sequence
+			 * of elements from "pend" to "main chain".
+			 * Note: program memory consumption
+			 * and overall executione time
+			 * may be greatly decreased,
+			 * if we just use `(2^n - (-1)^n) / 3` formula,
+			 * where n is number of Jacobsthal number
+			 * (source of formula: Wikipedia).
+			 * @var	jn
+			 */
+			Sort_Container jn;
+
+			/**
+			 * Generate \p a and \p from pairs of \p SRC.
+			 * \p a and \p b in this case are the same pools
+			 * as described in merge-insertion sort.
+			 * Each element in \p a and \p b is a pair:
+			 * the first is element itself,
+			 * the second is index in \p SRC.
+			 * If `SRC.size()` is odd,
+			 * last element remains untouched.
+			 * @warning	If \p a or \p b point
+			 * 		to an allocated heap memory
+			 * 		upon method calling,
+			 * 		memory leak would occur.
+			 * @throw	std::bad_alloc	Some allocation failed.
+			 * @param	SRC	Container with some elements.
+			 * @param	a	Pairs of smaller elements
+			 * 			from pairs of \p SRC
+			 * 			and their indices in \p SRC.
+			 * @param	b	Pairs of bigger elements
+			 * 			from pairs of \p SRC
+			 * 			and their indices in \p SRC.
+			 * @return	Size of both \p a and \p b.
+			 */
+			std::size_t populate_a_and_b(
+					const Sort_Container & SRC,
+					Sort_Container * & a,
+					Sort_Container * & b);
+
+			/**
+			 * Move \p old_a and \p old_b
+			 * to \p new_a and \p new_b respectively
+			 * in the order given by \p NEW_ORDER.
+			 * @warning	\p old_a and \p old_b
+			 * 		must be valid pointers.
+			 * @warning	It's up to you to ensure
+			 * 		both \p old_a and \p old_b
+			 * 		are of the same size as \p NEW_ORDER
+			 * 		before calling this method.
+			 * @warning	It's up to you to ensure
+			 * 		all elements in \p old_a and \p old_b
+			 * 		are valid pairs used in
+			 * 		merge-insertion sort.
+			 * @warning	If \p new_a or \p new_b point
+			 * 		to an allocated heap memory
+			 * 		upon method calling,
+			 * 		memory leak would occur.
+			 * @throw	std::bad_alloc	Some allocation failed.
+			 * @param	NEW_ORDER	New order of pairs
+			 * 				in both \p old_a
+			 * 				and \p old_b.
+			 * @param	old_a		`a` pool.
+			 * @param	old_b		`b` pool.
+			 * @param	new_a		Where to move
+			 * 				\p old_a in an order
+			 * 				given by \p NEW_ORDER.
+			 * @param	new_b		Where to move
+			 * 				\p old_b in an order
+			 * 				given by \p NEW_ORDER.
+			 */
+			void reorder_a_and_b(const Sort_Container NEW_ORDER,
+					Sort_Container * & old_a,
+					Sort_Container * & old_b,
+					Sort_Container * & new_a,
+					Sort_Container * & new_b);
+
+			/**
+			 * Populates \p main_chain with first element of \p a
+			 * and all elements of \p b.
+			 * Each container in \p main_chain will be
+			 * a pair of two elements:
+			 * first is a number from original sequence of numbers,
+			 * second is it's index in that same sequence.
+			 * @warning	\p a and \p b
+			 * 		must be valid pointers.
+			 * @warning	It's up to you to ensure
+			 * 		both \p a and \p b
+			 * 		are of the same size
+			 * 		of \p A_AND_B_SIZE.
+			 * @warning	It's up to you to ensure
+			 * 		all elements in \p a and \p b
+			 * 		are valid pairs used in
+			 * 		merge-insertion sort.
+			 * @warning	If \p main_chain points
+			 * 		to an allocated heap memory
+			 * 		upon method calling,
+			 * 		memory leak would occur.
+			 * @throw	std::bad_alloc	Some allocation failed.
+			 * @param	main_chain	Main chain to allocate
+			 * 				of size
+			 * 				\p MAIN_CHAIN_SIZE
+			 * 				and populate with
+			 * 				first element
+			 * 				from \p a
+			 * 				and all elements
+			 * 				from \p b.
+			 * @param	MAIN_CHAIN_SIZE	Required size
+			 * 				of \p main_chain.
+			 * @param	a		Lesser elements
+			 * 				of pairs from
+			 * 				original sequence
+			 * 				of numbers.
+			 * @param	b		Bigger elements
+			 * 				of pairs from
+			 * 				original sequence
+			 * 				of numbers.
+			 * @param	A_AND_B_SIZE	Size of \p and \p b.
+			 */
+			void populate_main_chain(Sort_Container * & main_chain,
+					const std::size_t MAIN_CHAIN_SIZE,
+					const Sort_Container * a,
+					const Sort_Container * b,
+					const std::size_t A_AND_B_SIZE);
+
+			/**
+			 * Populate \p pend with second and onwards
+			 * lesser elements from \p a
+			 * (\p pend would therefore be of size `A_SIZE - 1`).
+			 * Each container in \p pend will container
+			 * three elements:
+			 * first is a number from \p a,
+			 * second is it's index in the original
+			 * 	sequence of numbers,
+			 * third is index of it's bigger element from `b`
+			 * in "main chain".
+			 * @warning	\p a must be a valid pointers.
+			 * @warning	It's up to you to ensure
+			 * 		\p a is of the same size
+			 * 		of \p A_SIZE.
+			 * @warning	It's up to you to ensure
+			 * 		all elements in \p a
+			 * 		are valid pairs used in
+			 * 		merge-insertion sort.
+			 * @warning	If \p pend points
+			 * 		to an allocated heap memory
+			 * 		upon method calling,
+			 * 		memory leak would occur.
+			 * @param	main_chain	Main chain to allocate
+			 * 				of size
+			 * 				`\p A_SIZE - 1`
+			 * 				and populate with
+			 * 				second and onward
+			 * 				elements
+			 * 				from \p a.
+			 * @param	a		Lesser elements
+			 * 				of pairs from
+			 * 				original sequence
+			 * 				of numbers.
+			 * @param	A_SIZE		Size of \p a.
+			 */
+			void populate_pend(Sort_Container * & pend,
+					const Sort_Container * a,
+					const std::size_t A_SIZE);
+
+			/**
+			 * Get such sequence of indices
+			 * of elements of \p TO_SORT,
+			 * so that \p TO_SORT would be sorted.
+			 * To achieve that, merge-insertion sort
+			 * ("Ford-Johnson algorithm") is used.
+			 * @throw	std::bad_alloc	Some allocation failed.
+			 * @param	TO_SORT	Container of elements
+			 * 			to generate such
+			 * 			sequence of indices,
+			 * 			so that is gets sorted.
+			 * @return	Seqence of indices of elements
+			 * 		in \p TO_SORT,
+			 * 		so that \p TO_SORT would get sorted.
+			 */
+			Sort_Container get_sorted_sequence_indices(
+					const Sort_Container & TO_SORT);
 
 		public:
 			PmergeMe();
@@ -148,28 +339,15 @@ namespace PmergeMe
 			};
 
 			/**
-			 * Sort \p WHAT and save result to `data`.
-			 * @warning	Type stored in \t T
-			 * 		must be `int`,
-			 * 		otherwise the correct behavior
-			 * 		of this method is not guaranteed.
+			 * Sort \p IN and save result to `data`.
 			 * @warning	If `data` already stores
 			 * 		any information, it will be discarded.
 			 * @throw	std::bad_alloc	Some allocation failed.
 			 * @throw	GetTimeFail	clock_gettime() failed.
-			 * @tparam	T	A container type
-			 * 			that preserves the order
-			 * 			of inserted elements,
-			 * 			provides `size()` method,
-			 * 			`const_iterator`
-			 * 			to iterate through it
-			 * 			and `begin()` and `end()`
-			 * 			methods to obtain it.
-			 * @param	WHAT	Container with data to sort.
-			 * @return	Time taken to sort \p WHAT.
+			 * @param	IN	Container with data to sort.
+			 * @return	Time taken to sort \p IN.
 			 */
-			template <typename T>
-			struct timediff sort(const T & WHAT);
+			struct timediff sort(const Sort_Container & IN);
 
 			/**
 			 * Getter for `data`.
