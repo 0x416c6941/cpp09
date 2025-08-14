@@ -8,6 +8,7 @@
 #include <ostream>
 #include <cstddef>
 #include <iterator>
+#include <algorithm>
 #include <time.h>
 
 namespace PmergeMe
@@ -182,6 +183,13 @@ namespace PmergeMe
 	}
 
 	template <typename Sort_Container>
+	bool PmergeMe<Sort_Container>::CompareMainChainPairWithValue::operator () (
+			const Sort_Container & pair, int value) const
+	{
+		return *pair.begin() < value;
+	}
+
+	template <typename Sort_Container>
 	std::size_t PmergeMe<Sort_Container>::populate_a_and_b(
 			const Sort_Container & SRC,
 			Sort_Container * & a, Sort_Container * & b)
@@ -211,7 +219,7 @@ namespace PmergeMe
 			typename Sort_Container::const_iterator it_b;
 
 			it_a = SRC.begin();
-			std::advance(it_a, i * A_AND_B_SIZE);
+			std::advance(it_a, i * 2);
 			it_b = it_a;
 			++it_b;
 			try
@@ -219,16 +227,16 @@ namespace PmergeMe
 				if (*it_a < *it_b)
 				{
 					a[i].push_back(*it_a);
-					a[i].push_back(i * A_AND_B_SIZE);
+					a[i].push_back(i * 2);
 					b[i].push_back(*it_b);
-					b[i].push_back(i * A_AND_B_SIZE + 1);
+					b[i].push_back(i * 2 + 1);
 				}
 				else
 				{
 					a[i].push_back(*it_b);
-					a[i].push_back(i * A_AND_B_SIZE + 1);
+					a[i].push_back(i * 2 + 1);
 					b[i].push_back(*it_a);
-					b[i].push_back(i * A_AND_B_SIZE);
+					b[i].push_back(i * 2);
 				}
 			}
 			catch (const std::bad_alloc & e)
@@ -268,12 +276,24 @@ namespace PmergeMe
 			new_a = NULL;
 			throw std::bad_alloc();
 		}
+		size_t i = 0;
 		for (typename Sort_Container::const_iterator it = NEW_ORDER.begin();
 				it != NEW_ORDER.end();
-				++it)
+				++it, i++)
 		{
-			std::swap(old_a[*it], new_a[*it]);
-			std::swap(old_b[*it], new_b[*it]);
+			try
+			{
+				new_a[i] = old_a[*it];
+				new_b[i] = old_b[*it];
+			}
+			catch (const std::bad_alloc & e)
+			{
+				delete [] new_a;
+				new_a = NULL;
+				delete [] new_b;
+				new_b = NULL;
+				throw std::bad_alloc();
+			}
 		}
 	}
 
@@ -404,6 +424,83 @@ namespace PmergeMe
 	}
 
 	template <typename Sort_Container>
+	void PmergeMe<Sort_Container>::insert_pair_to_main_chain(
+			Sort_Container * main_chain,
+			const int LOWER_BOUND_HI,
+			const std::size_t MAIN_CHAIN_ITEMS,
+			int num, int idx)
+	{
+		Sort_Container * insert_pos;
+		std::size_t insert_i;
+
+		if (LOWER_BOUND_HI != -1)
+		{
+			insert_pos = std::lower_bound(main_chain,
+					main_chain + static_cast<std::size_t>(
+						LOWER_BOUND_HI),
+					num,
+					CompareMainChainPairWithValue());
+		}
+		else
+		{
+			insert_pos = std::lower_bound(main_chain,
+					main_chain + MAIN_CHAIN_ITEMS,
+					num,
+					CompareMainChainPairWithValue());
+		}
+		insert_i = static_cast<std::size_t>(std::distance(main_chain,
+					insert_pos));
+		for (std::size_t i = MAIN_CHAIN_ITEMS; i > insert_i; i--)
+		{
+			main_chain[i] = main_chain[i - 1];
+		}
+		main_chain[insert_i].clear();
+		main_chain[insert_i].push_back(num);
+		main_chain[insert_i].push_back(idx);
+	}
+
+	template <typename Sort_Container>
+	void PmergeMe<Sort_Container>::insert_pend_to_main_chain(
+			Sort_Container * main_chain,
+			std::size_t main_chain_items,
+			Sort_Container * pend,
+			const Sort_Container & insertion_sequence)
+	{
+		for (typename Sort_Container::const_iterator it_i = insertion_sequence.begin();
+				it_i != insertion_sequence.end(); ++it_i)
+		{
+			// Number, index in the original sequence
+			// and upper boundary
+			// for `std::lower_bound()` in `main_chain`.
+			typename Sort_Container::const_iterator it_p_num;
+			typename Sort_Container::const_iterator it_p_idx;
+			typename Sort_Container::const_iterator it_p_hi;
+
+			it_p_num = pend[*it_i].begin();
+			it_p_idx = it_p_num;
+			++it_p_idx;
+			it_p_hi = it_p_idx;
+			++it_p_hi;
+			this->insert_pair_to_main_chain(
+					main_chain, *it_p_hi,
+					main_chain_items++,
+					*it_p_num, *it_p_idx);
+			// Increasing index of bigger element in `main_chain`
+			// of each number in `pend`.
+			for (std::size_t pend_i = 0;
+					pend_i < insertion_sequence.size();
+					pend_i++)
+			{
+				typename Sort_Container::iterator it_p;
+
+				it_p = pend[pend_i].begin();
+				std::advance(it_p, 2);
+				*it_p++;
+			}
+		}
+	}
+
+	template <typename Sort_Container>
 	Sort_Container PmergeMe<Sort_Container>::get_sorted_sequence_indices(
 			const Sort_Container & TO_SORT)
 	{
@@ -425,13 +522,13 @@ namespace PmergeMe
 		// Each element in `pend` is a container
 		// containing three elements:
 		// first is a number from `a` with it's "index in `a` >= 1"
-		// 	to append to `main_chain`,
+		// 	to insert to `main_chain`,
 		// second is it's index in `TO_SORT`,
 		// third is it's bigger number from `b` with the same index
 		// 	as first number has in `a`.
 		Sort_Container * pend = NULL;
 		// Sequence of indices of elements from `pend`
-		// to append to `main_chain`,
+		// to insert to `main_chain`,
 		// generated based on Jacobsthal numbers.
 		Sort_Container insertion_sequence;
 		Sort_Container sorted_sequence_indices;
@@ -487,7 +584,7 @@ namespace PmergeMe
 			delete [] a;
 			delete [] b;
 			a = new_a;
-			a = new_b;
+			b = new_b;
 		}
 		try
 		{
@@ -527,16 +624,61 @@ namespace PmergeMe
 			delete [] pend;
 			throw std::bad_alloc();
 		}
-		for (std::size_t i = 0; i < PAIRS_CNT - 1; i++)
+		try
 		{
-			// Logic of moving `pend` to `main_chain`.
-			// Don't forget to move `main_chain` to the right
-			// upon each insertion :p
+			// `PAIRS_CNT + 1`, because by default
+			// first all element from `a`
+			// and all elements from `b` get inserted
+			// into `main_chain`.
+			this->insert_pend_to_main_chain(main_chain,
+					PAIRS_CNT + 1,
+					pend, insertion_sequence);
+		}
+		catch (const std::bad_alloc & e)
+		{
+			delete straggler;
+			delete [] main_chain;
+			delete [] pend;
+			throw std::bad_alloc();
 		}
 		delete [] pend;
 		if (straggler != NULL)
 		{
+			typename Sort_Container::const_iterator it_num;
+			typename Sort_Container::const_iterator it_idx;
+
+			it_num = straggler->begin();
+			it_idx = it_num;
+			++it_idx;
+			try
+			{
+				this->insert_pair_to_main_chain(
+						main_chain, -1,
+						PAIRS_CNT * 2,
+						*it_num, *it_idx);
+			}
+			catch (const std::bad_alloc & e)
+			{
+				delete straggler;
+				delete [] main_chain;
+				throw std::bad_alloc();
+			}
 			delete straggler;
+		}
+		for (size_t i = 0; i < TO_SORT.size(); i++)
+		{
+			typename Sort_Container::const_iterator it;
+
+			it = main_chain[i].begin();
+			try
+			{
+				sorted_sequence_indices.push_back(*(++it));
+			}
+			catch (const std::bad_alloc & e)
+			{
+				delete [] main_chain;
+				throw std::bad_alloc();
+			}
 		}
 		delete [] main_chain;
 		return sorted_sequence_indices;
@@ -567,11 +709,15 @@ namespace PmergeMe
 		}
 		this->data.clear();
 		sorted_indices_sequence = this->get_sorted_sequence_indices(IN);
-		for (typename Sort_Container::const_iterator it = IN.begin();
-				it != IN.end();
-				++it)
+		for (typename Sort_Container::const_iterator it_i = sorted_indices_sequence.begin();
+				it_i != sorted_indices_sequence.end();
+				++it_i)
 		{
-			this->data.push_back(*it);
+			typename Sort_Container::const_iterator it_val;
+
+			it_val = IN.begin();
+			std::advance(it_val, *it_i);
+			this->data.push_back(*it_val);
 		}
 		if (clock_gettime(CLOCK_MONOTONIC, &end_tm) == -1)
 		{

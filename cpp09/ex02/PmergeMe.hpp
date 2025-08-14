@@ -122,6 +122,18 @@ namespace PmergeMe
 			PmergeMe & operator = (const PmergeMe & src);
 
 			/**
+			 * A comparator object to compare
+			 * a value stored in "main chain" with some value.
+			 * @struct	CompareMainChainPairWithValue
+			 */
+			struct CompareMainChainPairWithValue
+			{
+				bool operator () (
+						const Sort_Container & pair,
+						int value) const;
+			};
+
+			/**
 			 * Where to store the sorted sequence of numbers.
 			 * @var	data
 			 */
@@ -265,7 +277,7 @@ namespace PmergeMe
 			 * 	sequence of numbers,
 			 * third is index of it's bigger element from `b`
 			 * in "main chain".
-			 * @warning	\p a must be a valid pointers.
+			 * @warning	\p a must be a valid pointer.
 			 * @warning	It's up to you to ensure
 			 * 		\p a is of the same size
 			 * 		of \p A_SIZE.
@@ -277,6 +289,7 @@ namespace PmergeMe
 			 * 		to an allocated heap memory
 			 * 		upon method calling,
 			 * 		memory leak would occur.
+			 * @throw	std::bad_alloc	Some allocation failed.
 			 * @param	main_chain	Main chain to allocate
 			 * 				of size
 			 * 				`\p A_SIZE - 1`
@@ -299,6 +312,7 @@ namespace PmergeMe
 			 * of Jacobsthal numbers.
 			 * @warning	If \p insertion_sequence isn't empty,
 			 * 		data in it will be discarded.
+			 * @throw	std::bad_alloc	Some allocation failed.
 			 * @param	insertion_sequence	Where to store
 			 * 					the insertion
 			 * 					sequence.
@@ -311,6 +325,85 @@ namespace PmergeMe
 			void populate_insertion_sequence(
 					Sort_Container & insertion_sequence,
 					const std::size_t PEND_SIZE);
+
+			/**
+			 * Insert pair of \p num and \p idx
+			 * to \p main_chain, whilst also
+			 * shifting all elements on the right
+			 * of the insertion position to the right by 1.
+			 * @warning	\p main_chain must be a valid pointer.
+			 * @warning	It's up to you to ensure
+			 * 		\p main_chain it big enough
+			 * 		to be inserted with one more pair.
+			 * @warning	At this point, it's expected
+			 * 		that \p main_chain stores
+			 * 		pairs, which respond
+			 * 		to format of "main_chain".
+			 * @throw	std::bad_alloc	Some allocation failed.
+			 * @param	main_chain		Where to insert
+			 * 					pair of
+			 * 					\p num
+			 * 					and \p idx.
+			 * @param	LOWER_BOUND_HI		Upper boundary
+			 * 					for
+			 * 					`std::lower_bound()`.
+			 * 					`-1` is not set.
+			 * @param	main_chain_items	Current amount
+			 * 					of pairs
+			 * 					in \p main_chain.
+			 * @param	num			First element
+			 * 					of pair
+			 * 					to insert
+			 * 					to \p main_chain.
+			 * @param	idx			Second element
+			 * 					of pair
+			 * 					to insert
+			 * 					to \p main_chain.
+			 */
+			void insert_pair_to_main_chain(
+					Sort_Container * main_chain,
+					const int LOWER_BOUND_HI,
+					const std::size_t MAIN_CHAIN_ITEMS,
+					int num, int idx);
+
+
+			/**
+			 * Insert all elements from \p pend to \p main_chain,
+			 * based on \p insertion_sequence.
+			 * @warning	\p main_chain and \p pend
+			 * 		must be valid pointers.
+			 * @warning	It's up to you to ensure
+			 * 		\p main_chain it big enough
+			 * 		to be inserted with \p pend.
+			 * @warning	At this point, it's expected
+			 * 		that \p main_chain stores
+			 * 		pairs and \p pend stores
+			 * 		containers of three elements,
+			 * 		both of which respond
+			 * 		to format of "main_chain"
+			 * 		and "pend" respectively.
+			 * @throw	std::bad_alloc	Some allocation failed.
+			 * @param	main_chain		Where to insert
+			 * 					elements
+			 * 					from \p pend.
+			 * @param	main_chain_items	Current amount
+			 * 					of pairs
+			 * 					in \p main_chain.
+			 * @param	pend			Elements
+			 * 					to insert
+			 * 					to \p main_chain.
+			 * @param	insertion_sequence	Sequence of
+			 * 					indices
+			 * 					of elements
+			 * 					to insert
+			 * 					from \p pend
+			 * 					to \p main_chain.
+			 */
+			void insert_pend_to_main_chain(
+					Sort_Container * main_chain,
+					std::size_t main_chain_items,
+					Sort_Container * pend,
+					const Sort_Container & insertion_sequence);
 
 			/**
 			 * Get such sequence of indices
