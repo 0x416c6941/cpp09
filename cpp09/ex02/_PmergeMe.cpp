@@ -487,7 +487,6 @@ namespace PmergeMe
 					main_chain, *it_p_hi,
 					main_chain_items++,
 					*it_p_num, *it_p_idx);
-			(void) inserted_pos;
 			// Increasing index of bigger element in `main_chain`
 			// of each number in `pend`.
 			for (std::size_t pend_i = 0;
@@ -498,13 +497,10 @@ namespace PmergeMe
 
 				it_p = pend[pend_i].begin();
 				std::advance(it_p, 2);
-				(*it_p)++;
-				/**
 				if (*it_p >= static_cast<int>(inserted_pos))
 				{
 					(*it_p)++;
 				}
-				 */
 			}
 		}
 	}
